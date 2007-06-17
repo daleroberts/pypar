@@ -283,6 +283,7 @@ TODO
   Gather an scatter: One should be able to specify along which axis
   arrays should be concatenated.
 
+  Redo create_distribution.py
 
 KNOWN BUGS
   Scatter for the moment works only properly when the amount of data is a 
