@@ -10,8 +10,11 @@
 # containing the word pypar to site-packages
 
 
-
-from distutils.core import setup, Extension
+try:
+    from setuptools import setup, Extension
+except ImportError:
+    pass
+    
 import distutils.sysconfig
 import distutils.debug
 import os, sys
@@ -125,7 +128,9 @@ def get_mpi_flags():
 if __name__ == "__main__":
     setup_compiler()
 
+    import numpy
     mpi_flags = get_mpi_flags()
+    mpi_flags['inc_dirs'].append(numpy.get_include())
 
 
     # FIXME: It would be good to set specific compiler flags, e.g.
@@ -140,23 +145,22 @@ if __name__ == "__main__":
         extra_compile_args = None
 
 
-    
 
-    setup(name="Pypar",
-          version="1.9.2",
-          description="Pypar - Parallel Python",
-          long_description="Pypar - Parallel Python, no-frills MPI interface",
-          author="Ole Nielsen",
-          author_email="Ole.Nielsen@anu.edu.au",
-          url="http://datamining.anu.edu.au/pypar",
-          package_dir = {'': 'lib'},
-          packages  = ['pypar'],
-          ext_modules = [Extension('pypar.mpiext',
-                                   ['mpiext.c'],
-                                   include_dirs=mpi_flags['inc_dirs'],
-                                   library_dirs=mpi_flags['lib_dirs'],
-                                   libraries=mpi_flags['libs'],
-                                   define_macros=mpi_flags['def_macros'],
-                                   undef_macros=mpi_flags['undef_macros'],
-                                   extra_compile_args=extra_compile_args)]
-          )
+   setup(name="Pypar",
+         version="1.9.3",
+         description="Pypar - Parallel Python",
+         long_description="Pypar - Parallel Python, no-frills MPI interface",
+         author="Ole Nielsen",
+         author_email="ole.moller.nielsen@gmail.com",
+         url="http://datamining.anu.edu.au/~ole/pypar",
+         package_dir = {'': 'lib'},
+         packages  = ['pypar'],
+         ext_modules = [Extension('pypar.mpiext',
+                                  ['lib/pypar/mpiext.c'],
+                                  include_dirs=mpi_flags['inc_dirs'],
+                                  library_dirs=mpi_flags['lib_dirs'],
+                                  libraries=mpi_flags['libs'],
+                                  define_macros=mpi_flags['def_macros'],
+                                  undef_macros=mpi_flags['undef_macros'],
+                                  extra_compile_args=extra_compile_args)]
+         )
