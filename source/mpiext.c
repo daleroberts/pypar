@@ -30,7 +30,7 @@
 #include "Python.h"
 #include "mpi.h"
 #include "math.h"
-#include "Numeric/arrayobject.h"
+#include "numpy/arrayobject.h"
 
 /* to handle MPI constants export (shamelessly stolen from _cursesmodule.c)*/
 #define SetDictInt(string,ch) \
