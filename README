@@ -269,21 +269,6 @@ Version 1.0.1 (8 February 2002)
 Version 1.0 (7 February 2002)                                         
   First public release for Python 2.1 (OMN)                          
   
-TODO  
-  max_tag is set to 32767. This works for Linux/LAM      
-  I couldn't use MPI_TAG_UB as it returned 0.
-  I would like a general solution.
-
-
-  Scatter needs to send buffer specified on all processes
-  even though it is ignored by all non-root processes.
-  How could we overcome that?
-  Similar problem for gather
-  
-  Gather an scatter: One should be able to specify along which axis
-  arrays should be concatenated.
-
-  Redo create_distribution.py
 
 KNOWN BUGS
   Scatter for the moment works only properly when the amount of data is a 
