@@ -10,6 +10,8 @@ Update setup.py to work with new structure (Prabhu?)
 Update create_release.py to make distros for sourceforge (Ole)	
 	
 Find a TRAC server to manage this list (and point to the sourceforg SVN)
+
+Remove obsoleted code (e.g. raw forms)
 	
 Fix up reduce to deal with complex as well as ND.	
 	
