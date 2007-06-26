@@ -10,6 +10,7 @@
    Ole Nielsen, Oct 2001      
 """   
 
+import numpy
 def compile(FNs=None, CC=None, LD = None, SFLAG = None, verbose = 1):
   """compile(FNs=None, CC=None, LD = None, SFLAG = None):
   
@@ -108,13 +109,13 @@ def compile(FNs=None, CC=None, LD = None, SFLAG = None, verbose = 1):
             
   # Find location of include files
   #
-  include = os.path.join(os.path.join(sys.exec_prefix, 'include'),
-                     'python'+sys.version[:3])
+  python_include = os.path.join(os.path.join(sys.exec_prefix, 'include'),
+                                'python'+sys.version[:3])
   
   
   # Check existence of Python.h
   #
-  headerfile = include + '/Python.h'
+  headerfile = python_include + '/Python.h'
   try:
     open(headerfile, 'r')
   except:
@@ -122,6 +123,10 @@ def compile(FNs=None, CC=None, LD = None, SFLAG = None, verbose = 1):
     Make sure files for Python C-extensions are installed. 
     In debian linux, for example, you need to install a
     package called something like python2.1-dev""" %headerfile
+
+
+  # Get numpy include
+  numpy_include = numpy.get_include()
   
   
   # Check filename(s)
@@ -145,7 +150,9 @@ def compile(FNs=None, CC=None, LD = None, SFLAG = None, verbose = 1):
   
     # Compile
     #
-    s = "%s -c %s -I%s -o %s.o" %(compiler, FN, include, root)
+    s = "%s -c %s -I%s -I%s -o %s.o" %(compiler, FN,
+                                       python_include, numpy_include,
+                                       root)
     if os.name == 'posix' and os.uname()[4] == 'x86_64':
       #Extra flags for 64 bit architectures
       #s += ' -fPIC -m64' #gcc

@@ -31,6 +31,7 @@
 #include "mpi.h"
 #include "math.h"
 #include "numpy/arrayobject.h"
+//#include "Numeric/arrayobject.h"
 
 /* to handle MPI constants export (shamelessly stolen from _cursesmodule.c)*/
 #define SetDictInt(string,ch) \
@@ -80,7 +81,7 @@ MPI_Datatype type_map(PyArrayObject *x, int *count) {
   /* INT       4        6         4      'i'
   /* LONG      5        8         8      'l'
   /* FLOAT     6       10         4      'f'  
-  /* DOUBLE    7       11         8      'd'
+  /* DOUBLE    12      11         8      'd'
   /*
   /* Also return the total number of elements in the array
   /*
@@ -95,20 +96,21 @@ MPI_Datatype type_map(PyArrayObject *x, int *count) {
   MPI_Datatype mpi_type;
 
   *count = length(x);
-    
-  py_type = x -> descr -> type_num;     
-  if (py_type == PyArray_DOUBLE) 
+  
+  //py_type = x -> descr -> type_num;     
+  py_type = PyArray_TYPE(x);
+  if (py_type == NPY_DOUBLE) 
     mpi_type = MPI_DOUBLE;
-  else if (py_type == PyArray_INT) 
+  else if (py_type == NPY_INT) 
     mpi_type = MPI_INT;
-  else if (py_type == PyArray_CDOUBLE) {
+  else if (py_type == NPY_CDOUBLE) {
     mpi_type = MPI_DOUBLE;
     (*count) *= 2;
-  } else if (py_type == PyArray_FLOAT) 
+  } else if (py_type == NPY_FLOAT) 
     mpi_type = MPI_FLOAT;
-  else if (py_type == PyArray_LONG)   
+  else if (py_type == NPY_LONG)   
     mpi_type = MPI_LONG;  
-  else if (py_type == PyArray_CFLOAT) {
+  else if (py_type == NPY_CFLOAT) {
     mpi_type = MPI_FLOAT;
     (*count) *= 2;
   } else {
@@ -116,7 +118,7 @@ MPI_Datatype type_map(PyArrayObject *x, int *count) {
     return NULL;
   }      
 
-  /*printf("Types %d %d\n", py_type, mpi_type); */
+  //printf("Types: py_type=%d, mpi_type=%d\n", py_type, mpi_type);
   
   return mpi_type;
 }    
@@ -323,7 +325,7 @@ static PyObject *send_array(PyObject *self, PyObject *args) {
     
   /* Make Numeric array from general sequence type (no cost if already Numeric)*/    
   x = (PyArrayObject *)
-    PyArray_ContiguousFromObject(input, PyArray_NOTYPE, 0, 0);
+    PyArray_ContiguousFromObject(input, NPY_NOTYPE, 0, 0);
     
   /* Input check and determination of MPI type */          
   mpi_type = type_map(x, &count);

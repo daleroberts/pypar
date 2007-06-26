@@ -16,9 +16,9 @@ print 'PATH:', os.getenv('PATH')
 print 'PYTHONPATH:', os.getenv('PYTHONPATH')
 print 'Version:', sys.version
 try:
-  import Numeric
+  import numpy
 except Exception, e:
-  msg = 'Module Numeric must be present to run pypar: %s' %e
+  msg = 'Module numpy must be present to run pypar: %s' %e
   raise msg
 
 
@@ -57,66 +57,87 @@ if numproc > 1:
   if myid == 0:
     # Integer arrays
     #
-    A = Numeric.array(range(N))
-    B = Numeric.zeros(N)    
+    A = numpy.array(range(N)).astype('i')
+    B = numpy.zeros(N).astype('i')
     pypar.raw_send(A,1)
     pypar.raw_receive(B,numproc-1)
-    
-    assert Numeric.allclose(A, B)
-    print "Raw communication of numeric integer arrays OK"
+
+    assert numpy.allclose(A, B)
+    print 'Raw communication of numeric integer arrays OK'
 
     # Real arrays
     #
-    A = Numeric.array(range(N)).astype('f')
-    B = Numeric.zeros(N).astype('f')    
+    A = numpy.array(range(N)).astype('f')
+    B = numpy.zeros(N).astype('f')    
     pypar.raw_send(A,1)
     pypar.raw_receive(B,numproc-1)
     
-    assert Numeric.allclose(A, B)    
-    print "Raw communication of numeric real arrays OK"
+    assert numpy.allclose(A, B)    
+    print 'Raw communication of numeric real arrays OK'
 
     # Strings (< 256 characters)
     #
-    A = "and now to something completely different !"
-    B = " "*len(A)
+    A = 'and now to something completely different !'
+    B = ' '*len(A)
     pypar.raw_send(A,1)
     pypar.raw_receive(B,numproc-1)
-    
-    assert A == B
-    print "Raw communication of strings OK"
+
+    if A == B:
+      print 'Raw communication of strings OK'
+    else:
+      raise Exception
+
+
+
     
     # A more general structure
     #
-    A = ['ABC', (1,2,3.14), {8: 'Monty'}, Numeric.array([13.45, 1.2])]
-    B = ['   ', (0,0,0.0), {0: '     '}, Numeric.zeros(2).astype('f')]    
+    A = ['ABC', (1,2,3.14), {8: 'Monty'}, numpy.array([13.45, 1.2])]
+    B = ['   ', (0,0,0.0), {0: '     '}, numpy.zeros(2).astype('f')]    
     pypar.raw_send(A,1)
     B = pypar.raw_receive(B,numproc-1)
-    
-    assert A == B
-    print "Raw communication of general structures OK"
+
+
+    OK = True
+    for i, a in enumerate(A):
+      b = B[i]
+
+      if type(a).__name__ == 'ndarray':
+        if not numpy.allclose(a, b):
+          OK = False
+          break
+      elif a != b:
+        OK = False
+        break
+
+    if OK is True:
+      print 'Raw communication of general structures OK' 
+    else:
+      raise Exception    
+
     
   else:  
     # Integers
     #
-    X = Numeric.zeros(N)
+    X = numpy.zeros(N).astype('i')
     pypar.raw_receive(X, myid-1)  
     pypar.raw_send(X, (myid+1)%numproc)
   
     # Floats
     #
-    X = Numeric.zeros(N).astype('f')
+    X = numpy.zeros(N).astype('f')
     pypar.raw_receive(X, myid-1)  
     pypar.raw_send(X, (myid+1)%numproc)    
 
     # Strings
     #
-    X = " "*256
+    X = ' '*256
     pypar.raw_receive(X, myid-1)  
     pypar.raw_send(X.strip(), (myid+1)%numproc)    
 
     # General
     #
-    X = ['   ', (0,0,0.0), {0: '     '}, Numeric.zeros(2).astype('f')]
+    X = ['   ', (0,0,0.0), {0: '     '}, numpy.zeros(2).astype('f')]
     X = pypar.raw_receive(X, myid-1)  
     pypar.raw_send(X, (myid+1)%numproc)    
     
@@ -128,23 +149,23 @@ if numproc > 1:
   if myid == 0:
     # Integer arrays
     #
-    A = Numeric.array(range(N))
+    A = numpy.array(range(N))
 
     pypar.send(A,1)
     B = pypar.receive(numproc-1)
     
 
-    assert Numeric.allclose(A, B)
-    print "Simplified communication of numeric integer arrays OK"
+    assert numpy.allclose(A, B)
+    print 'Simplified communication of numeric integer arrays OK'
 
     # Real arrays
     #
-    A = Numeric.array(range(N)).astype('f')
+    A = numpy.array(range(N)).astype('f')
     pypar.send(A,1)
     B=pypar.receive(numproc-1)
     
-    assert Numeric.allclose(A, B)    
-    print "Simplified communication of numeric real arrays OK"
+    assert numpy.allclose(A, B)    
+    print 'Simplified communication of numeric real arrays OK'
 
     # Strings
     #
@@ -157,12 +178,28 @@ if numproc > 1:
     
     # A more general structure
     #
-    A = ['ABC', (1,2,3.14), {8: 'Monty'}, Numeric.array([13.45, 1.2])]
+    A = ['ABC', (1,2,3.14), {8: 'Monty'}, numpy.array([13.45, 1.2])]
     pypar.send(A,1)
     B = pypar.receive(numproc-1)
+
+    OK = True
+    for i, a in enumerate(A):
+      b = B[i]
+
+      if type(a).__name__ == 'ndarray':
+        if not numpy.allclose(a, b):
+          OK = False
+          break
+      elif a != b:
+        OK = False
+        break
+
+    if OK is True:
+      print 'Simplified communication of general structures OK' 
+    else:
+      raise Exception    
     
-    assert A == B
-    print "Simplified communication of general structures OK"
+
     
   else:  
     # Integers
@@ -202,26 +239,43 @@ if numproc > 1:
   if myid == 0:
     print "Broadcast communication of strings OK"
   
-  testArray = myid * Numeric.array(range(N))
+  testArray = myid * numpy.array(range(N))
   pypar.bcast(testArray, 1)
-  assert Numeric.allclose(testArray, 1 * testArray)
+  assert numpy.allclose(testArray, 1 * testArray)
   
   if myid == 0:    
     print "Broadcast communication of numeric integer array OK"
 
 
-  testArray = myid * Numeric.array(range(N)).astype('f')
+  testArray = myid * numpy.array(range(N)).astype('f')
   pypar.bcast(testArray, 1)
-  assert Numeric.allclose(testArray, 1 * testArray)
+  assert numpy.allclose(testArray, 1 * testArray)
       
   if myid == 0:
     print "Broadcast communication of numeric real array OK"
+
     
-  testGeneral = ['ABC', myid, (1,2,3), {8: 'Monty'}, Numeric.array([13.45, 1.2])]
+  A_x = ['ABC', myid, (1,2,3), {8: 'Monty'}, numpy.array([13.45, 1.2])]
+  A_1 = ['ABC',    1, (1,2,3), {8: 'Monty'}, numpy.array([13.45, 1.2])]
+  B = pypar.bcast(A_x, 1)
+
+  OK = True
+  for i, a in enumerate(A_1):
+    b = B[i]
+
+    if type(a).__name__ == 'ndarray':
+      if not numpy.allclose(a, b):
+        OK = False
+        break
+    elif a != b:
+      OK = False
+      break
+
+  if OK is False:
+    raise Exception    
+    
   
-  testGeneral = pypar.bcast(testGeneral, 1)
-  
-  assert testGeneral ==  ['ABC', 1, (1,2,3), {8: 'Monty'}, Numeric.array([13.45, 1.2])]
+
   
   if myid == 0:
     print "Broadcast communication of general structures OK"

@@ -45,6 +45,10 @@ finalize() -- Cleanup MPI. No parallelism can take place after this point.
 See doc strings of individual functions for detailed documentation.
 """
 
+from numpy import zeros, reshape, product
+#from Numeric import zeros, reshape, product
+
+
 # Meta data
 __version__ = '1.9.3'
 __date__ = '24 April 2007'
@@ -76,12 +80,12 @@ def send(x, destination, use_buffer=False, vanilla=False,
        simplify the receive call.
        
        The variable x can be any (picklable) type, but
-       Numeric variables and text strings will most efficient.
+       numpy variables and text strings will most efficient.
        Setting vanilla = 1 forces vanilla mode for any type.
 
        If bypass is True, all admin and error checks
        get bypassed to reduce the latency. Should only
-       be used for sending Numeric arrays and should be matched
+       be used for sending numpy arrays and should be matched
        with a bypass in the corresponding receive command.
 
     """
@@ -136,7 +140,7 @@ def receive(source, buffer=None, vanilla=False, tag=default_tag,
        If buffer is specified the corresponding send must specify
        use_buffer = True.
        The variable buffer can be any (picklable) type, but
-       Numeric variables and text strings will most efficient.
+       numpy variables and text strings will most efficient.
 
        Appropriate protocol will be automatically determined
        and corresponding receive function called.
@@ -144,7 +148,7 @@ def receive(source, buffer=None, vanilla=False, tag=default_tag,
 
        If bypass is True, all admin and error checks
        get bypassed to reduce the latency. Should only
-       be used for receiving Numerical arrays and should
+       be used for receiving numpy arrays and should
        be matched with a bypass in the corresponding send command.
        Also buffer must be specified.
     """
@@ -171,13 +175,12 @@ def receive(source, buffer=None, vanilla=False, tag=default_tag,
         else:  
             protocol, typecode, size, shape = create_control_info(buffer, vanilla)
     
-    
+
         #Receive payload data     
         if protocol == 'array':
             if buffer is None:
-                import Numeric
-                buffer = Numeric.zeros(size,typecode)
-                buffer = Numeric.reshape(buffer, shape)
+                buffer = zeros(size,typecode)
+                buffer = reshape(buffer, shape)
             
             stat = receive_array(buffer, source, tag)
             
@@ -217,7 +220,7 @@ def broadcast(buffer, root, vanilla=False, bypass=False):
        and call corresponding send function.
        
        The variable buffer can be any (picklable) type, but
-       Numeric variables and text strings will most efficient.
+       numpy variables and text strings will most efficient.
        Setting vanilla = 1 forces vanilla mode for any type.
 
        If bypass is True, all admin and error checks
@@ -283,15 +286,13 @@ def scatter(x, root, buffer=None, vanilla=False):
     #Scatter
     if protocol == 'array':
         if buffer is None:
-            import Numeric
-            
             # Modify shape along axis=0 to match size
             shape = list(shape)
             shape[0] /= numproc
-            count = Numeric.product(shape)            
+            count = product(shape)            
             
-            buffer = Numeric.zeros(count, typecode)
-            buffer = Numeric.reshape(buffer, shape)
+            buffer = zeros(count, typecode)
+            buffer = reshape(buffer, shape)
       
         scatter_array(x, buffer, root)
     elif protocol == 'string':
@@ -300,7 +301,7 @@ def scatter(x, root, buffer=None, vanilla=False):
             
         scatter_string(x, buffer, root)
     elif protocol == 'vanilla':
-        errmsg = 'Scatter is only supported for Numeric arrays and strings.\n'
+        errmsg = 'Scatter is only supported for numpy arrays and strings.\n'
         errmsg += 'If you wish to distribute a general sequence, '
         errmsg += 'please use send and receive commands or broadcast.'
         raise errmsg
@@ -332,13 +333,12 @@ def gather(x, root, buffer=None, vanilla=0):
     #Gather
     if protocol == 'array':
         if buffer is None:
-            import Numeric
-            buffer = Numeric.zeros(size*numproc, typecode)
+            buffer = zeros(size*numproc, typecode)
 
             # Modify shape along axis=0 to match size
             shape = list(shape)
             shape[0] *= numproc
-            buffer = Numeric.reshape(buffer, shape)
+            buffer = reshape(buffer, shape)
       
         gather_array(x, buffer, root)    
     elif protocol == 'string':
@@ -347,7 +347,7 @@ def gather(x, root, buffer=None, vanilla=0):
         
         gather_string(x, buffer, root)          
     elif protocol == 'vanilla':
-        errmsg = 'Gather is only supported for Numeric arrays and strings.\n'
+        errmsg = 'Gather is only supported for numpy arrays and strings.\n'
         errmsg += 'If you wish to distribute a general sequence, '
         errmsg += 'please use send and receive commands or broadcast.'
         raise errmsg
@@ -389,13 +389,12 @@ def reduce(x, op, root, buffer=None, vanilla=0, bypass=False):
     #Reduce
     if protocol == 'array':
         if buffer is None:
-            import Numeric
-            buffer = Numeric.zeros(size*numproc, typecode)
+            buffer = zeros(size*numproc, typecode)
       
             # Modify shape along axis=0 to match size
             shape = list(shape)
             shape[0] *= numproc
-            buffer = Numeric.reshape(buffer, shape)
+            buffer = reshape(buffer, shape)
       
         reduce_array(x, buffer, op, root)    
     elif (protocol == 'vanilla' or protocol == 'string'):
@@ -475,7 +474,7 @@ def raw_send(x, destination, tag=default_tag, vanilla=0):
 
 def raw_receive(x, source, tag=default_tag, vanilla=0, return_status=0):
     x = receive(source, tag=tag, vanilla=vanilla,
-              return_status=return_status, buffer=x)
+                return_status=return_status, buffer=x)
     return x
 
 def raw_scatter(x, buffer, source, vanilla=0):
@@ -527,9 +526,7 @@ class Status:
         self.size = status_tuple[4]    #Size of one element
 
     def __repr__(self):
-        return 'Pypar Status Object:\n  source=%d\n  tag=%d\n '+\
-               'error=%d\n  length=%d\n  size=%d\n'\
-               %(self.source, self.tag, self.error, self.length, self.size)
+        return 'Pypar Status Object:\n  source=%d\n  tag=%d\n  error=%d\n  length=%d\n  size=%d\n' %(self.source, self.tag, self.error, self.length, self.size)
   
     def bytes(self):
         """Number of bytes transmitted (excl control info)
@@ -540,10 +537,10 @@ class Status:
 
 def create_control_info(x, vanilla=0, return_object=False):
     """Determine which protocol to use for communication:
-       (Numeric) arrays, strings, or vanilla based x's type.
+       (numpy) arrays, strings, or vanilla based x's type.
 
        There are three protocols:
-       'array':   Numeric arrays of type 'i', 'l', 'f', 'd', 'F' or 'D' can be
+       'array':   numpy arrays of type 'i', 'l', 'f', 'd', 'F' or 'D' can be
                   communicated  with mpiext.send_array and mpiext.receive_array.
        'string':  Text strings can be communicated with mpiext.send_string and
                   mpiext.receive_string.
@@ -579,22 +576,22 @@ def create_control_info(x, vanilla=0, return_object=False):
             protocol = 'string'
             typecode = 'c'
             size = len(x)
-        elif type(x).__name__ == 'array': #Numeric isn't imported yet
+        elif type(x).__name__ == 'ndarray': #numpy isn't imported yet
             try:
-                import Numeric
+                import numpy
             except:
-                print "WARNING (pypar.py): Numeric module could not be imported,",
+                print "WARNING (pypar.py): numpy module could not be imported,",
                 print "reverting to vanilla mode"
                 protocol = 'vanilla'
             else:  
-                typecode = x.typecode() 
+                typecode = x.dtype.char 
                 if typecode in ['i', 'l', 'f', 'd', 'F', 'D']:
                     protocol = 'array'
                     shape = x.shape
-                    size = Numeric.product(shape)
+                    size = product(shape)
                 else:    
-                    print "WARNING (pypar.py): Numeric object type %s is not supported."\
-                          %(x.typecode())
+                    print "WARNING (pypar.py): numpy object type %s is not supported."\
+                          %(x.dtype.char)
                     print "Only types 'i', 'l', 'f', 'd', 'F', 'D' are supported,",
                     print "Reverting to vanilla mode."
                     protocol = 'vanilla'

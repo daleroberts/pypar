@@ -7,7 +7,7 @@
 #
 # OMN, OCT 2001
 
-import time, sys, pypar, Numeric
+import time, sys, pypar, numpy
 
 # The send/recv routines
 #
@@ -102,15 +102,15 @@ print "I am process %d on %s" %(myid,processor_name)
 #
 
 try:
-  from RandomArray import uniform, seed
-  seed(17, 53)
+  from numpy.random import uniform, seed
+  seed(17)
   A = uniform(0.0,100.0,MAXM)
 except:
   print 'problem with RandomArray'
-  from Numeric import ones, Float
-  A = ones( MAXM, Float )
+  from numpy import ones, Float
+  A = ones(MAXM).astype('f')
   
-elsize = A.itemsize()
+elsize = A.itemsize
 #print elsize
 
 noelem  = [0]*MAXI
@@ -179,7 +179,7 @@ for k in range(repeats):
       # However, this may affect accuracy of timings for some reason.
       #
       if consistency_check:
-        assert Numeric.alltrue(C == A[:m])
+        assert numpy.alltrue(C == A[:m])
     else:
       #
       # Parallel process - get msg and pass it on
