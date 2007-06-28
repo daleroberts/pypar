@@ -10,10 +10,12 @@
 # containing the word pypar to site-packages
 
 
-try:
-    from setuptools import setup, Extension
-except ImportError:
-    pass
+#try:
+#    from setuptools import setup, Extension
+#except ImportError:
+#    pass
+
+from setuptools import setup, Extension
     
 import distutils.sysconfig
 import distutils.debug
@@ -21,6 +23,8 @@ import os, sys
 import popen2
 import string
 import tempfile
+
+import pypar # To get version number
 
 def setup_compiler():
     distutils.sysconfig.get_config_vars()
@@ -146,13 +150,13 @@ if __name__ == "__main__":
 
 
 
-    setup(name="Pypar",
+    setup(name='Pypar',
           version=pypar.__version__,
-          description="Pypar - Parallel Python",
-          long_description="Pypar - Parallel Python, no-frills MPI interface",
-          author="Ole Nielsen",
-          author_email="ole.moller.nielsen@gmail.com",
-          url="http://sourceforge.net/projects/pypar",
+          description='Pypar - Parallel Python',
+          long_description='Pypar - Parallel Python, no-frills MPI interface',
+          author='Ole Nielsen',
+          author_email='ole.moller.nielsen@gmail.com',
+          url='http://sourceforge.net/projects/pypar',
           package_dir = {'': 'lib'},
           packages  = ['pypar'],
           ext_modules = [Extension('pypar.mpiext',
