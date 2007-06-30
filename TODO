@@ -21,6 +21,8 @@ Better documentation (LaTeX files in pypar/documentation/manuals
 should provide a good starting point).
 
 Use proper Python exceptions in mpiext.c
+
+Create Debian and RPM packages (maybe even a Windows installer)
 	
 Re-introduce optional length if one wants to communicate less 
 than given array (very low priotity)
