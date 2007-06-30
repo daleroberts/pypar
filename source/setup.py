@@ -10,13 +10,13 @@
 # containing the word pypar to site-packages
 
 
-#try:
-#    from setuptools import setup, Extension
-#except ImportError:
-#    pass
+from distutils.core import setup, Extension
+try:
+   from setuptools import setup, Extension
+   # Generate Python EGG if possible.
+except ImportError:
+   pass
 
-from setuptools import setup, Extension
-    
 import distutils.sysconfig
 import distutils.debug
 import os, sys
