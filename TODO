@@ -23,7 +23,11 @@ should provide a good starting point).
 Use proper Python exceptions in mpiext.c
 
 Create Debian and RPM packages (maybe even a Windows installer)
+
+Incorporate pypar in Parallel Knoppix (Michael Creel)
 	
+Add examples from Summerschool 2005 to pypar distribution.
+		
 Re-introduce optional length if one wants to communicate less 
 than given array (very low priotity)
 
