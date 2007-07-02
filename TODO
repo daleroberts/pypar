@@ -24,6 +24,9 @@ Use proper Python exceptions in mpiext.c
 
 Create Debian and RPM packages (maybe even a Windows installer)
 
+Make list of projects using pypar, e.g. http://sourceforge.net/projects/pyfdm/	
+
+
 Incorporate pypar in Parallel Knoppix (Michael Creel)
 	
 Add examples from Summerschool 2005 to pypar distribution.
