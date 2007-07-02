@@ -8,7 +8,18 @@
 #
 # Some times you'll have to add a file called pypar.pth
 # containing the word pypar to site-packages
+#
+# See http://docs.python.org/dist/pure-pkg.html for more on distutils
 
+# FIXME: Now mpiext.c and pypar.py are assumed to be in this directory.
+# Maybe, we should put them in the default package directory, pypar.
+# The repository structure would then be
+# 
+# pypar
+#     demos
+#     documentation
+#     source
+#          pypar
 
 from distutils.core import setup, Extension
 try:
@@ -157,10 +168,10 @@ if __name__ == "__main__":
           author='Ole Nielsen',
           author_email='ole.moller.nielsen@gmail.com',
           url='http://sourceforge.net/projects/pypar',
-          package_dir = {'': 'lib'},
+          package_dir = {'pypar': ''}, # Use files in this dirctory 
           packages  = ['pypar'],
           ext_modules = [Extension('pypar.mpiext',
-                                   ['lib/pypar/mpiext.c'], 
+                                   ['mpiext.c'], 
                                    include_dirs=mpi_flags['inc_dirs'],
                                    library_dirs=mpi_flags['lib_dirs'],
                                    libraries=mpi_flags['libs'],
