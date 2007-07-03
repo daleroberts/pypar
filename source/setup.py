@@ -34,8 +34,9 @@ import os, sys
 import popen2
 import string
 import tempfile
+import numpy
+from __metadata__ import __version__, __date__, __author__
 
-import pypar # To get version number
 
 def setup_compiler():
     distutils.sysconfig.get_config_vars()
@@ -143,7 +144,6 @@ def get_mpi_flags():
 if __name__ == "__main__":
     setup_compiler()
     
-    import numpy
     mpi_flags = get_mpi_flags()
     mpi_flags['inc_dirs'].append(numpy.get_include())
 
@@ -162,10 +162,10 @@ if __name__ == "__main__":
 
 
     setup(name='Pypar',
-          version=pypar.__version__,
+          version=__version__,
           description='Pypar - Parallel Python',
           long_description='Pypar - Parallel Python, no-frills MPI interface',
-          author='Ole Nielsen',
+          author=__author__,
           author_email='ole.moller.nielsen@gmail.com',
           url='http://sourceforge.net/projects/pypar',
           package_dir = {'pypar': ''}, # Use files in this dirctory 

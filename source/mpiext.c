@@ -56,8 +56,8 @@
 static char errmsg[132];  /*Used to cretae exception messages*/
 
 int length(PyArrayObject *x) {  
-  /*Compute the total length of contiguous array
-  /*
+  /*Compute the total length of contiguous array*/
+  /* */
   /*Necessary for communicating multi dimensional arrays */
   
   int i, length;
@@ -74,23 +74,23 @@ int length(PyArrayObject *x) {
 
 MPI_Datatype type_map(PyArrayObject *x, int *count) {  
   /* Return the MPI Datatype corresponding to                       
-  /* the Python data type as follows  
-  /*
-  /* TYPE    py_type  mpi_type  bytes  symbol
-  /* ---------------------------------------- 
-  /* INT       4        6         4      'i'
-  /* LONG      5        8         8      'l'
-  /* FLOAT     6       10         4      'f'  
-  /* DOUBLE    12      11         8      'd'
-  /*
-  /* Also return the total number of elements in the array
-  /*
-  /* The Python datatype COMPLEX ('F') and COMPLEX_DOUBLE ('D')
-  /* is treated as a special case to the absence of an 
-  /* MPI_COMPLEX datatype:
-  /*
-  /* Complex arrays are mapped to float or double arrays with real 
-  /* and imaginary parts alternating and count is updated. */
+     the Python data type as follows  
+  
+     TYPE    py_type  mpi_type  bytes  symbol
+     ---------------------------------------- 
+     INT       4        6         4      'i'
+     LONG      5        8         8      'l'
+     FLOAT     6       10         4      'f'  
+     DOUBLE    12      11         8      'd'
+  
+     Also return the total number of elements in the array
+  
+     The Python datatype COMPLEX ('F') and COMPLEX_DOUBLE ('D')
+     is treated as a special case to the absence of an 
+     MPI_COMPLEX datatype:
+  
+     Complex arrays are mapped to float or double arrays with real 
+     and imaginary parts alternating and count is updated. */
   
   int py_type;
   MPI_Datatype mpi_type;
@@ -352,7 +352,7 @@ static PyObject *send_array(PyObject *self, PyObject *args) {
 /*                                                           */
 /*************************************************************/
 static PyObject *receive_array(PyObject *self, PyObject *args) {
-  PyObject *input;
+  /*PyObject *input;*/
   PyArrayObject *x;
   int source, tag, error, st_length, size, count, myid;
   MPI_Datatype mpi_type;
