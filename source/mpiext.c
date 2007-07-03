@@ -57,7 +57,6 @@ static char errmsg[132];  /*Used to cretae exception messages*/
 
 int length(PyArrayObject *x) {  
   /*Compute the total length of contiguous array*/
-  /* */
   /*Necessary for communicating multi dimensional arrays */
   
   int i, length;

@@ -150,7 +150,7 @@ def compile(FNs=None, CC=None, LD = None, SFLAG = None, verbose = 1):
   
     # Compile
     #
-    s = "%s -c %s -I%s -I%s -o %s.o" %(compiler, FN,
+    s = "%s -c %s -I%s -I%s -o %s.o -Wall" %(compiler, FN,
                                        python_include, numpy_include,
                                        root)
     if os.name == 'posix' and os.uname()[4] == 'x86_64':
