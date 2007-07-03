@@ -153,13 +153,11 @@ if __name__ == '__main__':
 
 
     #-----------------------------
-    # Get demos as well
-
+    # Get demos
     s = 'svn export -r %d demos %s/demos' %(svn_revision,
                                             distro_dir) 
     print s
     system(s)
-
 
 
     # Zip it up
@@ -174,6 +172,30 @@ if __name__ == '__main__':
 
     # Clean up
     s = '/bin/rm -rf %s/demos' %(distro_dir) 
+    print s
+    system(s)
+
+
+    #-----------------------------
+    # Get documentation
+    s = 'svn export -r %d documentation %s/documentation' %(svn_revision,
+                                                            distro_dir) 
+    print s
+    system(s)
+
+
+    # Zip it up
+    s = 'cd %s;tar cvfz %s *' %(distro_dir, distro_filename)
+    print s
+    system(s)
+
+    # Move distro to release area
+    s = '/bin/mv %s/*.tgz %s' %(distro_dir, release_dir) 
+    print s
+    system(s)
+
+    # Clean up
+    s = '/bin/rm -rf %s/documentation' %(distro_dir) 
     print s
     system(s)
 
