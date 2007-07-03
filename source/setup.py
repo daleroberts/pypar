@@ -22,11 +22,13 @@
 #          pypar
 
 from distutils.core import setup, Extension
-try:
-   from setuptools import setup, Extension
-   # Generate Python EGG if possible.
-except ImportError:
-   pass
+
+# FIXME (Ole): This works, but I don't know how to use it
+#try:
+#   from setuptools import setup, Extension
+#   # Generate Python EGG if possible.
+#except ImportError:
+#   pass
 
 import distutils.sysconfig
 import distutils.debug

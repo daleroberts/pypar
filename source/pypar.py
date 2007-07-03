@@ -673,7 +673,7 @@ try:
 except:
     errmsg = 'ERROR: C extension mpiext could not be imported.\n'
     errmsg += 'Please compile mpiext.c e.g. by running\n'
-    errmsg += '  python install.py\n'
+    errmsg += '  python compile_pypar_manually.py\n'
     errmsg += 'in the pypar directory, or by using\n'
     errmsg += '  python setup.py install\n'
     #raise Exception, errmsg
