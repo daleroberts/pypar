@@ -150,14 +150,18 @@ if __name__ == "__main__":
     mpi_flags['inc_dirs'].append(numpy.get_include())
 
 
-    # FIXME: It would be good to set specific compiler flags, e.g.
-    # for our AMD opteron cluster which is using the portland group
-    # compiler pgcc, but I can't get this to work let alone get distutils
-    # to give some diagnostics on what flags it is actually using.
+    # setting some extra compile flags for AMD64, utilizing
+    # distutils.sysconfig to check which compiler to use
     if os.name == 'posix' and os.uname()[4] == 'x86_64':
         #Extra flags for 64 bit architectures
-        #extra_compile_args = ' -fPIC -m64' #Valid for gcc        
-        extra_compile_args = ' -fPIC -tp amd64' #Valid for pgcc
+        if 'pgcc' in distutils.sysconfig.get_config_var('CC'):
+            extra_compile_args = [' -fPIC -tp amd64'] #Valid for pgcc
+        elif 'gcc' in distutils.sysconfig.get_config_var('CC'):
+            extra_compile_args = [' -fPIC -m64'] #Valid for gcc
+        elif 'icc' in distutils.sysconfig.get_config_var('CC'):
+            extra_compile_args = [' -fPIC'] #Valid for icc
+        else:
+            extra_compile_args = None
     else:
         extra_compile_args = None
 
