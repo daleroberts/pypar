@@ -460,25 +460,25 @@ def balance(N, P, p):
 
 
 # Obsolete functions
-# (for backwards compatibility - remove in version 2.0)
-
-def raw_send(x, destination, tag=default_tag, vanilla=0):
-    send(x, destination, use_buffer=True, tag=tag, vanilla=vanilla) 
-
-
-def raw_receive(x, source, tag=default_tag, vanilla=0, return_status=0):
-    x = receive(source, tag=tag, vanilla=vanilla,
-                return_status=return_status, buffer=x)
-    return x
-
-def raw_scatter(x, buffer, source, vanilla=0):
-    scatter(x, source, buffer=buffer, vanilla=vanilla)
-
-def raw_gather(x, buffer, source, vanilla=0):
-    gather(x, source, buffer=buffer, vanilla=0)  
-
-def raw_reduce(x, buffer, op, source, vanilla=0):
-    reduce(x, op, source, buffer=buffer, vanilla=0)
+# (for backwards compatibility - removed in version 2.0)
+#
+#def raw_send(x, destination, tag=default_tag, vanilla=0):
+#    send(x, destination, use_buffer=True, tag=tag, vanilla=vanilla) 
+#
+#
+#def raw_receive(x, source, tag=default_tag, vanilla=0, return_status=0):
+#    x = receive(source, tag=tag, vanilla=vanilla,
+#                return_status=return_status, buffer=x)
+#    return x
+#
+#def raw_scatter(x, buffer, source, vanilla=0):
+#    scatter(x, source, buffer=buffer, vanilla=vanilla)
+#
+#def raw_gather(x, buffer, source, vanilla=0):
+#    gather(x, source, buffer=buffer, vanilla=0)  
+#
+#def raw_reduce(x, buffer, op, source, vanilla=0):
+#    reduce(x, op, source, buffer=buffer, vanilla=0)
 
 def bcast(buffer, root, vanilla=False):
     return broadcast(buffer, root, vanilla)

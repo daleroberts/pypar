@@ -30,8 +30,8 @@ assert 'Finalize' in methods
 assert 'Get_processor_name' in methods
 assert 'Wtime' in methods
 assert 'rank' in methods
-assert 'raw_receive' in methods
-assert 'raw_send' in methods
+#assert 'raw_receive' in methods
+#assert 'raw_send' in methods
 assert 'receive' in methods
 assert 'send' in methods
 assert 'bcast' in methods
@@ -39,6 +39,28 @@ assert 'size' in methods
 
 print "Module pypar imported OK"
 #pypar.Barrier()
+
+
+# Shorthands as tests were written prior to version 2.0
+# Eventually, modify all tests to use buffers and remove
+# the 'raw' form.
+def raw_send(x, destination, tag=pypar.default_tag, vanilla=0):
+    pypar.send(x, destination, use_buffer=True, tag=tag, vanilla=vanilla) 
+
+def raw_receive(x, source, tag=pypar.default_tag, vanilla=0, return_status=0):
+    x = pypar.receive(source, tag=tag, vanilla=vanilla,
+                      return_status=return_status, buffer=x)
+    return x
+
+def raw_scatter(x, buffer, source, vanilla=0):
+    pypar.scatter(x, source, buffer=buffer, vanilla=vanilla)
+
+
+def raw_gather(x, buffer, source, vanilla=0):
+    pypar.gather(x, source, buffer=buffer, vanilla=0)  
+
+def raw_reduce(x, buffer, op, source, vanilla=0):
+    pypar.reduce(x, op, source, buffer=buffer, vanilla=0)
 
 
 myid =    pypar.rank()
@@ -59,8 +81,8 @@ if numproc > 1:
     #
     A = numpy.array(range(N)).astype('i')
     B = numpy.zeros(N).astype('i')
-    pypar.raw_send(A,1)
-    pypar.raw_receive(B,numproc-1)
+    raw_send(A,1)
+    raw_receive(B,numproc-1)
 
     assert numpy.allclose(A, B)
     print 'Raw communication of numeric integer arrays OK'
@@ -69,8 +91,8 @@ if numproc > 1:
     #
     A = numpy.array(range(N)).astype('f')
     B = numpy.zeros(N).astype('f')    
-    pypar.raw_send(A,1)
-    pypar.raw_receive(B,numproc-1)
+    raw_send(A,1)
+    raw_receive(B,numproc-1)
     
     assert numpy.allclose(A, B)    
     print 'Raw communication of numeric real arrays OK'
@@ -79,8 +101,8 @@ if numproc > 1:
     #
     A = 'and now to something completely different !'
     B = ' '*len(A)
-    pypar.raw_send(A,1)
-    pypar.raw_receive(B,numproc-1)
+    raw_send(A,1)
+    raw_receive(B,numproc-1)
 
     if A == B:
       print 'Raw communication of strings OK'
@@ -94,8 +116,8 @@ if numproc > 1:
     #
     A = ['ABC', (1,2,3.14), {8: 'Monty'}, numpy.array([13.45, 1.2])]
     B = ['   ', (0,0,0.0), {0: '     '}, numpy.zeros(2).astype('f')]    
-    pypar.raw_send(A,1)
-    B = pypar.raw_receive(B,numproc-1)
+    raw_send(A,1)
+    B = raw_receive(B,numproc-1)
 
 
     OK = True
@@ -120,26 +142,26 @@ if numproc > 1:
     # Integers
     #
     X = numpy.zeros(N).astype('i')
-    pypar.raw_receive(X, myid-1)  
-    pypar.raw_send(X, (myid+1)%numproc)
+    raw_receive(X, myid-1)  
+    raw_send(X, (myid+1)%numproc)
   
     # Floats
     #
     X = numpy.zeros(N).astype('f')
-    pypar.raw_receive(X, myid-1)  
-    pypar.raw_send(X, (myid+1)%numproc)    
+    raw_receive(X, myid-1)  
+    raw_send(X, (myid+1)%numproc)    
 
     # Strings
     #
     X = ' '*256
-    pypar.raw_receive(X, myid-1)  
-    pypar.raw_send(X.strip(), (myid+1)%numproc)    
+    raw_receive(X, myid-1)  
+    raw_send(X.strip(), (myid+1)%numproc)    
 
     # General
     #
     X = ['   ', (0,0,0.0), {0: '     '}, numpy.zeros(2).astype('f')]
-    X = pypar.raw_receive(X, myid-1)  
-    pypar.raw_send(X, (myid+1)%numproc)    
+    X = raw_receive(X, myid-1)  
+    raw_send(X, (myid+1)%numproc)    
     
 
   # Test easy communication  - without buffers (arrays, strings and general)

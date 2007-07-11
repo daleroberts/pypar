@@ -24,9 +24,9 @@
 from distutils.core import setup, Extension
 
 # FIXME (Ole): This works, but I don't know how to use it
+# Generate Python EGG if possible.
 #try:
 #   from setuptools import setup, Extension
-#   # Generate Python EGG if possible.
 #except ImportError:
 #   pass
 
