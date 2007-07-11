@@ -480,26 +480,26 @@ def balance(N, P, p):
 #def raw_reduce(x, buffer, op, source, vanilla=0):
 #    reduce(x, op, source, buffer=buffer, vanilla=0)
 
-def bcast(buffer, root, vanilla=False):
-    return broadcast(buffer, root, vanilla)
+#def bcast(buffer, root, vanilla=False):
+#    return broadcast(buffer, root, vanilla)
 
-def Wtime():
-    return time()
-
-def Get_processor_name():
-    return get_processor_name()
-
-def Initialized():
-    return initialized()
-
-def Finalize():
-    finalize()
-
-def Abort():
-    abort()
-
-def Barrier():
-    barrier()
+#def Wtime():
+#    return time()
+#
+#def Get_processor_name():
+#    return get_processor_name()
+#
+#def Initialized():
+#    return initialized()
+#
+#def Finalize():
+#    finalize()
+#
+#def Abort():
+#    abort()
+#
+#def Barrier():
+#    barrier()
     
       
 

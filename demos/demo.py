@@ -31,7 +31,7 @@ print "I am proc %d of %d on node %s" %(myid, numproc, node)
 
 if numproc < 2:
   print "Demo must run on at least 2 processors to continue"      
-  pypar.Abort()
+  pypar.abort()
   
 if myid == 0:
   msg = "MSGP0"  

@@ -21,16 +21,14 @@ except:
 #print "Importing pypar"
 import pypar
 methods = dir(pypar)
-assert 'Abort' in methods
-assert 'Finalize' in methods
-assert 'Get_processor_name' in methods
-assert 'Wtime' in methods
+assert 'abort' in methods
+assert 'finalize' in methods
+assert 'get_processor_name' in methods
+assert 'time' in methods
 assert 'rank' in methods
-#assert 'raw_receive' in methods
-#assert 'raw_send' in methods
 assert 'receive' in methods
 assert 'send' in methods
-assert 'bcast' in methods
+assert 'broadcast' in methods
 assert 'size' in methods
 
 #print "Module pypar imported OK"
@@ -73,10 +71,10 @@ def raw_reduce(x, buffer, op, source, vanilla=0):
 
 myid =    pypar.rank()
 numproc = pypar.size()
-node =    pypar.Get_processor_name()
+node =    pypar.get_processor_name()
 
 print 'I am processor %d of %d on node %s' %(myid, numproc, node)
-pypar.Barrier()
+pypar.barrier()
 
 
 if numproc > 1:
@@ -584,11 +582,11 @@ if numproc > 1:
   #
       
   testString = ('test' + str(myid)).ljust(10)  #Buffers must have the same length on all procs!
-  pypar.bcast(testString, 0)
+  pypar.broadcast(testString, 0)
   assert testString.strip() == 'test0'
   
   testString = ('test' + str(myid)).ljust(10)  #Buffers must have the same length on all procs!
-  pypar.bcast(testString, numproc-1)
+  pypar.broadcast(testString, numproc-1)
   assert testString.strip() == 'test' + str(numproc-1)
   
   if myid == 0:
@@ -597,7 +595,7 @@ if numproc > 1:
   ####################################################  
   N = 17 #Number of elements
   testArray = myid * numpy.array(range(N))
-  pypar.bcast(testArray, 1)
+  pypar.broadcast(testArray, 1)
   assert numpy.allclose(testArray, 1 * testArray)
   
   if myid == 0:    
@@ -605,7 +603,7 @@ if numproc > 1:
 
 
   testArray = myid * numpy.array(range(N)).astype('f')
-  pypar.bcast(testArray, 1)
+  pypar.broadcast(testArray, 1)
   assert numpy.allclose(testArray, 1 * testArray)
   if myid == 0:
     print "Broadcast communication of numeric real array OK"
@@ -614,21 +612,21 @@ if numproc > 1:
   M = 13
   testArray = myid * numpy.array(range(M*N)).astype('f')
   testArray = numpy.reshape(testArray, (M,N))  
-  pypar.bcast(testArray, 1)
+  pypar.broadcast(testArray, 1)
   assert numpy.allclose(testArray, 1 * testArray)
   if myid == 0:
     print "Broadcast communication of 2D numeric real array OK"
 
   testArray = myid * numpy.array(range(M*2*N)).astype('f')
   testArray = numpy.reshape(testArray, (M,2,N))  
-  pypar.bcast(testArray, 1)
+  pypar.broadcast(testArray, 1)
   assert numpy.allclose(testArray, 1 * testArray)
   if myid == 0:
     print "Broadcast communication of 3D numeric real array OK"
 
   testArray = myid * numpy.array(range(M*2*N)).astype('D')
   testArray = numpy.reshape(testArray, (M,2,N))  
-  pypar.bcast(testArray, 1)
+  pypar.broadcast(testArray, 1)
   assert numpy.allclose(testArray, 1 * testArray)
   if myid == 0:
     print "Broadcast communication of 3D numeric complex array OK"
@@ -636,7 +634,7 @@ if numproc > 1:
     
   A_x = ['ABC', myid, (1,2,3), {8: 'Monty'}, numpy.array([13.45, 1.2])]
   A_1 = ['ABC',    1, (1,2,3), {8: 'Monty'}, numpy.array([13.45, 1.2])]
-  B = pypar.bcast(A_x, 1)
+  B = pypar.broadcast(A_x, 1)
 
   OK = True
   for i, a in enumerate(A_1):
@@ -1188,7 +1186,7 @@ if numproc > 1:
     
 
 
-pypar.Finalize()
+pypar.finalize()
 
 
 

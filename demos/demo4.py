@@ -32,7 +32,7 @@ print "I am proc %d of %d on node %s" %(myid, numproc, node)
 
 if numproc < 2:
   print "Demo must run on at least 2 processors to continue"      
-  pypar.Abort()
+  pypar.abort()
   
 if myid == 0:
   msg = Numeric.array([0], typ)  
@@ -60,7 +60,7 @@ else:
   print 'Processor %d sending msg "%s" to %d' %(myid, msg, destination)
   pypar.send(msg, destination)
 
-pypar.Finalize()
+pypar.finalize()
 
 
 

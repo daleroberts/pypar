@@ -120,6 +120,6 @@ if __name__ == '__main__':
     else:
         slave()
 
-    pypar.Finalize()
+    pypar.finalize()
     sys.stderr.write("MPI environment finalized.\n")
         	

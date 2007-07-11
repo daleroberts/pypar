@@ -82,7 +82,7 @@ vanilla = 0 #Select vanilla mode (slower but general)
 
 numprocs = pypar.size()
 myid = pypar.rank()
-processor_name = pypar.Get_processor_name()
+processor_name = pypar.get_processor_name()
 
 if myid == 0:
   # Main process - Create message, pass on, verify correctness and log timing
@@ -92,9 +92,9 @@ if myid == 0:
 
 if numprocs < 2:
   print "Program needs at least two processors - aborting\n"
-  pypar.Abort()
+  pypar.abort()
    
-pypar.Barrier() #Synchronize all before timing   
+pypar.barrier() #Synchronize all before timing   
 print "I am process %d on %s" %(myid,processor_name)
 
 
@@ -126,8 +126,8 @@ if myid == 0:
   # Determine timer overhead 
   cpuOH = 1.0;
   for k in range(repeats):   # Repeat to get reliable timings 
-    t1 = pypar.Wtime()
-    t2 = pypar.Wtime()
+    t1 = pypar.time()
+    t2 = pypar.time()
     if t2-t1 < cpuOH: cpuOH = t2-t1
     
   print "Timing overhead is %f seconds.\n" %cpuOH         
@@ -143,13 +143,13 @@ for k in range(repeats):
    
     noelem[i] = m
    
-    pypar.Barrier() # Synchronize 
+    pypar.barrier() # Synchronize 
    
     if myid == 0:
       #
       # Main process
       #
-      t1 = pypar.Wtime()
+      t1 = pypar.time()
 
       if method==0:
         pypar.send(A[:m], destination=1, tag=msgid, vanilla=vanilla)
@@ -169,7 +169,7 @@ for k in range(repeats):
         #stat = receive_array(A[:m], numprocs-1, msgid)
         #C = A[:m]
         
-      t2 = pypar.Wtime() - t1 - cpuOH
+      t2 = pypar.time() - t1 - cpuOH
       t2 = t2/numprocs
       avgtime[i] = avgtime[i] + t2
       if t2 < mintime[i]: mintime[i] = t2
@@ -233,7 +233,7 @@ if myid == 0:
   print "Estimated latency:           %d micro s" %int(mintime[0]-bytes[0]*Tbw)  
 
    
-pypar.Finalize()
+pypar.finalize()
 
 
 
