@@ -202,6 +202,11 @@ DOCUMENTATION
 
   
 HISTORY
+version 2.0.1_alpha (11/7/7) Setup patch by jk Nilsen and removal 
+of obsolete code
+version 2.0alpha (3/7/7) Migration to numpy and patches to setup
+Also started Subversion repository on Sourceforge.
+
 version 1.9.3 (24 April 2007)
   added bypass form for reduce 
 version 1.9.2
@@ -327,6 +332,8 @@ ACKNOWLEDGEMENTS
     Michal Kaukic (mike@frcatel.fri.utc.sk)	
 	for pointing out the need for multi dimensional arrays and 
 	for suggesting an implementation in the 2D case.	
+    J K Nilsen for support and compiler patches
+    	
 	
 
 
