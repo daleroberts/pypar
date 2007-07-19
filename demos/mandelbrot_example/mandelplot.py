@@ -86,8 +86,12 @@ def plot(A, kmax = None):
     #if answer.lower() in ['n', 'no']:
     #	import sys
     #	sys.exit()
-	
+
+    # Try to display using a image viewer
     import os
-    os.system('xv %s' %(filename + '.' + imtype))
+    os.system('eog %s' %(filename + '.' + imtype))
+    #os.system('xv %s' %(filename + '.' + imtype))    
 
 
+
+ 
