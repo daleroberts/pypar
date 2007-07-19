@@ -1,7 +1,8 @@
 // Python - C extension for fast computation of the Mandelbrot plot routine
 //
-// To compile:
-//  python compile.py mandelplot_ext.c
+// To compile (Python2.3):
+//  gcc -c mandelplot_ext.c -I/usr/include/python2.3 -o mandelplot_ext.o -Wall -O3 
+//  gcc -shared mandelplot_ext.o  -o mandelplot_ext.so	
 //
 // kmax = 256
 // c = complex(0.5, 0.5)

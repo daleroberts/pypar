@@ -1,63 +1,97 @@
-"""Fundamentals for computing the Mandelbrot set
+"""Fundamental routines for computing the Mandelbrot set
+
+   Ole Nielsen, SUT 2003
 """
 
+def balance(N, P, p):
+    """Compute p'th interval when N is distributed over P bins.
+    """
+
+    from math import floor
+
+    L = int(floor(float(N)/P))
+    K = N - P*L
+    if p < K:
+        Nlo = p*L + p
+        Nhi = Nlo + L + 1
+    else:
+        Nlo = p*L + K
+        Nhi = Nlo + L
+
+    return Nlo, Nhi
+
+
 def calculate_point(c, kmax):
-    """Calculate one point of the Mandelbrot set by iterating the 
-    governing equation
-    
-        z_{k+1} = z_k^2 + c,  k = 0, 1, ... kmax-1
-        z_0 = 0 + 0i        
-   
-    for as long as k < kmax  and |z_k| <= 2
-    
-    Inputs:
-      c:    A complex number for which the iteration is computed
-      kmax: The maximal number of iterations
-      
-    Output:
-      count: The value of k after the iteration has completed. 
+    """Python version for calculating on point of the set
+       This is slow and for reference purposes only.
+       Use version from mandel_ext instead.
     """
 
-    z = complex(0,0) #Create complex number with initial value
-    k = 0            #Initialise iteration counter
+    z = complex(0,0)
 
-    while k < kmax and abs(z) <= 2:
+    count = 0
+    while count < kmax and abs(z) <= 2:
         z = z*z + c
-        k = k+1
+        count += 1
 
-    return k
+    return count    
 
 
-
-def calculate_region(real_min, real_max, imag_min, imag_max, kmax, M, N):
-    """Calculate the mandelbrot set in a given rectangular subset of the complex plane.
-    Inputs:
-       real_min: Left boundary
-       real_max: Right boundary
-       imag_min: Lower boundary
-       imag_max: Upper boundary       
-       kmax: Maximal iteration count
-       M: Number of points along the real axis
-       N: Number of points along the imaginary axis
-    Output:
-       Matrix A (MxN) containing iteration counts for each point   
+def calculate_region(real_min, real_max, imag_min, imag_max, kmax, M, N,
+                     Mlo = 0, Mhi = None, Nlo = 0, Nhi = None):
+    """Calculate the mandelbrot set in the given region with resolution M by N
+       If Mlo, Mhi or Nlo, Nhi are specified computed only given subinterval.
     """
-    
-    from Numeric import zeros
-    from mandel_ext import calculate_point #Faster C-implementation
 
-    #Compute resolution
-    real_step = (real_max-real_min)/M  
+    from Numeric import zeros
+    from mandel_ext import calculate_point  #Fast C implementation
+
+    if Mhi is None: Mhi = M
+    if Nhi is None: Nhi = N    
+
+    real_step = (real_max-real_min)/M
     imag_step = (imag_max-imag_min)/N
-    
-    
+
     A = zeros((M, N))   # Create M x N matrix
-    
-    #Compute Mandelbrot iteration for each point in the rectangular subset
-    #and store iteration counts in matrix A                   
-    for i in range(M):
-        for j in range(N):
+
+    for i in range(Mlo, Mhi):
+        for j in range(Nlo, Nhi):
             c = complex(real_min + i*real_step, imag_min + j*imag_step)
             A[i,j] = calculate_point(c, kmax)
-            
+
     return A
+
+
+
+def calculate_region_cyclic(real_min, real_max, imag_min, imag_max, kmax,
+                            M, N, p=0, P=1, row = 1):
+    """Calculate rows p+nP, n in N of the mandelbrot set in the given region
+    with resolution M by N
+
+    This is the most efficient way of partitioning the work.
+    """
+
+
+    from Numeric import zeros
+    from mandel_ext import calculate_point  #Fast C implementation
+
+    real_step = (real_max-real_min)/M
+    imag_step = (imag_max-imag_min)/N
+
+    A = zeros((M, N))   # Create M x N matrix
+
+    if row:
+        for i in range(M):
+            if i%P == p:
+                for j in range(N):
+                    c = complex(real_min + i*real_step, imag_min + j*imag_step)
+                    A[i,j] = calculate_point(c, kmax)
+    else:
+        for j in range(N):        
+            if j%P == p:
+                for i in range(M):
+                    c = complex(real_min + i*real_step, imag_min + j*imag_step)
+                    A[i,j] = calculate_point(c, kmax)
+    return A
+
+    

@@ -1,0 +1,8 @@
+Files in this directory gives examples of different parallel strategies using the mandbrot fractal as example. The codes need PIL (Python Imaging Library) to
+show the results, but the computational bit will still work without PIL.
+
+This material was developed as part of a teaching module and is documented 
+further at 
+
+http://datamining.anu.edu.au/~ole/work/teaching/summerschool2005/
+

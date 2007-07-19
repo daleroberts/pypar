@@ -110,19 +110,20 @@ def compile(FNs=None, CC=None, LD = None, SFLAG = None, verbose = 1):
   #
   include = os.path.join(os.path.join(sys.exec_prefix, 'include'),
                      'python'+sys.version[:3])
+  headerfile = os.path.join(include, 'Python.h')
   
-  
-  # Check existence of Python.h
-  #
-  headerfile = include + '/Python.h'
   try:
+    # unix style include directory
     open(headerfile, 'r')
   except:
-    raise """Did not find Python header file %s.
-    Make sure files for Python C-extensions are installed. 
-    In debian linux, for example, you need to install a
-    package called something like python2.1-dev""" %headerfile
-  
+    # windows style include directory
+    include = os.path.join(sys.exec_prefix, 'include')
+    headerfile = os.path.join(include, 'Python.h')
+    try:
+      open(headerfile, 'r')
+    except:
+      raise """Did not find Python header file.
+      Make sure files for Python C-extensions are installed.""" 
   
   # Check filename(s)
   #
@@ -145,13 +146,8 @@ def compile(FNs=None, CC=None, LD = None, SFLAG = None, verbose = 1):
   
     # Compile
     #
-    s = "%s -c %s -I%s -o %s.o" %(compiler, FN, include, root)
-    if os.name == 'posix' and os.uname()[4] == 'x86_64':
-      #Extra flags for 64 bit architectures
-      #s += ' -fPIC -m64' #gcc
-      s += ' -fPIC -tp amd64' #pgcc
-      
     
+    s = "%s -c %s -I%s -o %s.o -Wall -O" %(compiler, FN, include, root)
     if verbose:
       print s
     else:
@@ -164,12 +160,8 @@ def compile(FNs=None, CC=None, LD = None, SFLAG = None, verbose = 1):
 
   
   # Make shared library (*.so)
-  s = "%s -%s %s -o %s.so" %(loader, sharedflag, object_files, root1)
-
-  if os.name == 'posix' and os.uname()[4] == 'x86_64':
-      #Extra flags for 64 bit architectures using Portland compilers
-      s += ' -mcmodel=medium'
   
+  s = "%s -%s %s -o %s.so -lm" %(loader, sharedflag, object_files, root1)
   if verbose:
     print s
   else:
