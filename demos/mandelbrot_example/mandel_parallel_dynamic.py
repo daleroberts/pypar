@@ -11,13 +11,13 @@
 
 from mandelbrot import calculate_region, balance
 from mandelplot import plot
-import pypar, Numeric
+import pypar, numpy
 
 
 # User definable parameters
 kmax = 2**15  # Maximal number of iterations (=number of colors)
-M = N = 700       # width = height = N
-B = 24            # Number of blocks (first dim)
+M = N = 700   # width = height = N
+B = 24        # Number of blocks (first dim)
 
 
 # Region in complex plane [-2:2]
@@ -31,10 +31,10 @@ work_tag = 0
 result_tag = 1
 
 #Initialise
-t = pypar.Wtime()
+t = pypar.time()
 P = pypar.size()
 p = pypar.rank()
-processor_name = pypar.Get_processor_name()
+processor_name = pypar.get_processor_name()
 
 print 'Processor %d initialised on node %s' %(p,processor_name)
 
@@ -42,7 +42,7 @@ assert P > 1, 'Must have at least one slave'
 assert B > P-1, 'Must have more work packets than slaves'
 
 
-A = Numeric.zeros((M,N))
+A = numpy.zeros((M,N))
 if p == 0:
     # Create work pool (B blocks)
     # using balanced work partitioning
@@ -94,7 +94,7 @@ else:
         #Return result
         pypar.send(A, destination=0, tag=result_tag)
 
-pypar.Finalize()
+pypar.finalize()
 
 
 
