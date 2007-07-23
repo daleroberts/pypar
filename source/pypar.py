@@ -398,6 +398,57 @@ def reduce(x, op, root, buffer=None, vanilla=0, bypass=False):
       
     return buffer  
 
+#
+# Functions related to MPI_Bsend().
+#
+
+def bsend(x, destination, use_buffer=False, vanilla=False,
+         tag=default_tag, bypass=False):
+
+    if bypass is True:
+        #print "bsend_array() bypass True"
+        bsend_array(x, destination, tag)
+        return
+
+    import types, string
+        
+    #Input check
+    errmsg = 'Destination id (%s) must be an integer.' %destination
+    assert type(destination) == types.IntType, errmsg
+    
+    errmsg = 'Tag %d is reserved by pypar - please use another.' %control_tag
+    assert tag != control_tag, errmsg
+
+    # Create metadata about object to be sent
+    control_info, x = create_control_info(x, vanilla, return_object=True)
+    protocol = control_info[0]
+
+    # Possibly transmit control data
+    if use_buffer is False:
+       send_control_info(control_info, destination)   
+      
+    # Transmit payload data    
+    if protocol == 'array':
+        bsend_array(x, destination, tag)    
+        #print "bsend_array() bypass False"
+    elif protocol in ['string', 'vanilla']:
+        bsend_string(x, destination, tag)          
+        #print "bsend_string()"
+    else:
+        raise 'Unknown protocol: %s' %protocol
+
+def push_for_alloc(x, bypass=False):
+    if bypass is True:
+        return array_push_for_alloc_and_attach(x)
+    else:
+        return string_push_for_alloc_and_attach(x)
+
+def alloc_and_attach():
+    mpi_alloc_and_attach()
+
+def detach_and_dealloc():
+    mpi_detach_and_dealloc()
+
 
 #---------------------------------------------------------
 # AUXILIARY FUNCTIONS
@@ -483,12 +534,12 @@ def balance(N, P, p):
 #def bcast(buffer, root, vanilla=False):
 #    return broadcast(buffer, root, vanilla)
 
-#def Wtime():
-#    return time()
-#
-#def Get_processor_name():
-#    return get_processor_name()
-#
+def Wtime():
+    return time()
+
+def Get_processor_name():
+    return get_processor_name()
+
 #def Initialized():
 #    return initialized()
 #
@@ -778,6 +829,9 @@ else:
          scatter_string, scatter_array,\
          gather_string, gather_array,\
          reduce_array,\
+	 bsend_string, bsend_array, \
+	 mpi_alloc_and_attach, mpi_detach_and_dealloc, \
+	 string_push_for_alloc_and_attach, array_push_for_alloc_and_attach, \
          MPI_ANY_TAG as any_tag, MPI_TAG_UB as max_tag,\
          MPI_ANY_SOURCE as any_source,\
          MAX, MIN, SUM, PROD, LAND, BAND,\
