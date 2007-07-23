@@ -185,7 +185,9 @@ static PyObject *send_string(PyObject *self, PyObject *args) {
     return NULL;
   }  
       
-  return Py_BuildValue("");
+  Py_INCREF(Py_None);
+  return (Py_None);
+  //return Py_BuildValue("");
 }
 
 /**********************************************************/
