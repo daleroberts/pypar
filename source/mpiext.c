@@ -193,7 +193,6 @@ static PyObject *send_string(PyObject *self, PyObject *args) {
       
   Py_INCREF(Py_None);
   return (Py_None);
-  //return Py_BuildValue("");
 }
 
 /**********************************************************/
@@ -251,7 +250,8 @@ static PyObject *broadcast_string(PyObject *self, PyObject *args) {
     return NULL;
   }  
    
-  return Py_BuildValue("");  
+  Py_INCREF(Py_None);
+  return (Py_None);
 }
 
 /**********************************************************/
@@ -281,7 +281,8 @@ static PyObject *scatter_string(PyObject *self, PyObject *args) {
     return NULL;
   }  
    
-  return Py_BuildValue("");  
+  Py_INCREF(Py_None);
+  return (Py_None);
 }
 
 /**********************************************************/
@@ -308,7 +309,8 @@ static PyObject *gather_string(PyObject *self, PyObject *args) {
     return NULL;
   }  
    
-  return Py_BuildValue("");  
+  Py_INCREF(Py_None);
+  return (Py_None);
 }
 
 /*
@@ -670,7 +672,8 @@ static PyObject *send_array(PyObject *self, PyObject *args) {
     return NULL;
   }  
    
-  return Py_BuildValue("");  
+	Py_INCREF(Py_None);
+	return (Py_None);
 }
 
 
@@ -772,7 +775,8 @@ static PyObject *broadcast_array(PyObject *self, PyObject *args) {
     return NULL;
   }  
 	 
-  return Py_BuildValue("");
+	Py_INCREF(Py_None);
+	return (Py_None);
 }
 
 /*************************************************************/
@@ -809,7 +813,8 @@ static PyObject *scatter_array(PyObject *self, PyObject *args) {
     return NULL;
   }  
       
-  return Py_BuildValue("");
+	Py_INCREF(Py_None);
+	return (Py_None);
 }
 
 
@@ -844,7 +849,8 @@ static PyObject *gather_array(PyObject *self, PyObject *args) {
     return NULL;
   }  
   
-  return Py_BuildValue("");
+	Py_INCREF(Py_None);
+	return (Py_None);
 }
 
 
@@ -901,7 +907,8 @@ static PyObject *reduce_array(PyObject *self, PyObject *args) {
     return NULL;
   }  
   
-  return Py_BuildValue("");
+	Py_INCREF(Py_None);
+	return (Py_None);
 }
 
 /*********************************************************/
@@ -980,7 +987,8 @@ static PyObject * init(PyObject *self, PyObject *args) {
     return NULL;
   }  
 
-  return Py_BuildValue("");  
+	Py_INCREF(Py_None);
+	return (Py_None);
 } 
 
 
@@ -1012,7 +1020,8 @@ static PyObject * finalize(PyObject *self, PyObject *args) {
     return NULL;
   }  
     
-  return Py_BuildValue("");
+	Py_INCREF(Py_None);
+	return (Py_None);
 } 
 
 static PyObject * mpi_abort(PyObject *self, PyObject *args) {  
@@ -1026,7 +1035,8 @@ static PyObject * mpi_abort(PyObject *self, PyObject *args) {
     return NULL;
   }  
   
-  return Py_BuildValue("");  
+	Py_INCREF(Py_None);
+	return (Py_None);
 } 
 
 static PyObject * barrier(PyObject *self, PyObject *args) {  
@@ -1040,7 +1050,8 @@ static PyObject * barrier(PyObject *self, PyObject *args) {
     return NULL;
   }  
   
-  return Py_BuildValue("");
+	Py_INCREF(Py_None);
+	return (Py_None);
 }    
 
 static PyObject * Wtime(PyObject *self, PyObject *args) {     
