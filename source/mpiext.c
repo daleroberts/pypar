@@ -329,22 +329,25 @@ static PyObject *bsend_string(PyObject *self, PyObject *args) {
 
   //error = 0, myid = -1;
 
-  /* process the parameters */
+  /* Process the parameters. */
   if (!PyArg_ParseTuple(args, "s#ii", &s, &length, &destination, &tag))
     return NULL;
 
   //MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-  //printf("bsend_string: MPI_Bsend: BEFORE rank %d send to %d, count %d \n", myid, destination, length);
+  //printf("bsend_string: MPI_Bsend: BEFORE rank %d send to %d, count %d \n", \ 
+  //		  myid, destination, length);
 
-  /* call the MPI routine */
+  /* Call the MPI routine. */
   error = MPI_Bsend(s, length, MPI_CHAR, destination, tag, MPI_COMM_WORLD);
 
-  //printf("bsend_string: MPI_Bsend: AFTER rank %d send to %d, count %d \n", myid, destination, length);
+  //printf("bsend_string: MPI_Bsend: AFTER rank %d send to %d, count %d \n", \ 
+  //        myid, destination, length);
 
   if (error != 0) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: bsend_string: MPI_Bsend failed with error code %d\n", myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);    // Raise ValueError, errmsg
+    sprintf(errmsg, "Proc %d: bsend_string: MPI_Bsend failed with error \
+			code %d\n", myid, error);
+    PyErr_SetString(PyExc_RuntimeError, errmsg); // Raise ValueError, errmsg
     return NULL;
   }  
       
@@ -359,61 +362,57 @@ static PyObject *bsend_string(PyObject *self, PyObject *args) {
  *
  * Accepted types for array: float, double, int, or long.
  *
- * Return value: PyNone.
+ * Return value: 'PyNone'.
  *
  */
 
 static PyObject *bsend_array(PyObject *self, PyObject *args) { 
-	PyObject *input;
-	PyArrayObject *x;
+  PyObject *input;
+  PyArrayObject *x;
 
-	int destination;
- 	int tag;
- 	int count;
-	MPI_Datatype mpi_type;
+  int destination;
+  int tag;
+  int count;
+  MPI_Datatype mpi_type;
 
-	int error, myid;
+  int error, myid;
 
-	/* process the parameters */
-	if (!PyArg_ParseTuple(args, "Oii", &input, &destination, &tag))
-		return NULL;
-
-	/*
-	if (!PyArg_ParseTuple(args, "Oii", &x, &destination, &tag))
-		return NULL;    
-	*/
+  /* Process the parameters. */
+  if (!PyArg_ParseTuple(args, "Oii", &input, &destination, &tag))
+    return NULL;
 
   /* Make Numpy array from general sequence type (no cost if already Numpy). */
-	x = (PyArrayObject *) PyArray_ContiguousFromObject(input, PyArray_NOTYPE, 0, 0);
+  x = (PyArrayObject *) PyArray_ContiguousFromObject(input, PyArray_NOTYPE, 0, 0);
 
-	/* Input check and determination of MPI type */          
-	mpi_type = type_map(x, &count);
-	if (!mpi_type) return NULL;
+  /* Input check and determination of MPI type */          
+  mpi_type = type_map(x, &count);
+  if (!mpi_type)
+    return NULL;
 
-	/* call the MPI routine */
+  /* call the MPI routine */
+  
+  //MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
+  //printf("bsend_array: MPI_Bsend: BEFORE rank %d send to %d, count %d \n", \
+  //        myid, destination, length);
+  
+  error = MPI_Bsend(x->data, count, mpi_type, destination, tag, \
+          MPI_COMM_WORLD);
 
-	//MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-	//printf("bsend_array: MPI_Bsend: BEFORE rank %d send to %d, count %d \n", \
-	myid, destination, length);
+  //printf("bsend_array: MPI_Bsend: AFTER rank %d send to %d, count %d \n", \
+  //       myid, destination, length);
 
-	error = MPI_Bsend(x->data, count, mpi_type, destination, tag, \
-			MPI_COMM_WORLD);
+  Py_DECREF(x); 	   
+  
+  if (error != 0) {
+    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
+    sprintf(errmsg, "Proc %d: bsend_array: MPI_Bsend failed with error code \
+            %d\n", myid, error);
+    PyErr_SetString(PyExc_RuntimeError, errmsg);   
+    return NULL;
+  }  
 
-	//printf("bsend_array: MPI_Bsend: AFTER rank %d send to %d, count %d \n", \
-	myid, destination, length);
-
-	Py_DECREF(x); 	   
-
-	if (error != 0) {
-		MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-		sprintf(errmsg, "Proc %d: bsend_array: MPI_Bsend failed with error code %d\n",
-			   	myid, error);
-		PyErr_SetString(PyExc_RuntimeError, errmsg);   
-		return NULL;
-	}  
-
-	Py_INCREF(Py_None);
-	return (Py_None);
+  Py_INCREF(Py_None);
+  return (Py_None);
 }
 
 /*
@@ -428,22 +427,20 @@ static PyObject *bsend_array(PyObject *self, PyObject *args) {
  *
  * This function is used when protocol is set to 'string' or 'vanilla'.
  *
- * Return value: 'Py_None'.
+ * Return value: 'buf_size'.
  */
 
 static PyObject *string_push_for_alloc_and_attach(PyObject *self, PyObject *args) {
-	char *s;
-	int length;
+  char *s;
+  int length;
 
-	/* Process the parameters. */
-	if (!PyArg_ParseTuple(args, "s#", &s, &length))
-		return NULL;
+  /* Process the parameters. */
+  if (!PyArg_ParseTuple(args, "s#", &s, &length))
+    return NULL;
 
-	buf_size += (length + MPI_BSEND_OVERHEAD);
+  buf_size += (length + MPI_BSEND_OVERHEAD);
 
-	//return Py_BuildValue("i", buf_size);
-	Py_INCREF(Py_None);
-	return (Py_None);
+  return Py_BuildValue("i", buf_size);
 }
 
 /*
@@ -451,43 +448,42 @@ static PyObject *string_push_for_alloc_and_attach(PyObject *self, PyObject *args
  *
  * This function is used when protocol is set to 'array'.
  *
- * Return value: 'Py_None'.
+ * Return value: 'buf_size'.
  */
 
 static PyObject *array_push_for_alloc_and_attach(PyObject *self, PyObject *args) {
-	PyArrayObject *array;	
-	int count;				
-	int nbytes;				
-	MPI_Datatype mpi_type;	
+  PyArrayObject *array;	
+  int count;				
+  int nbytes;				
+  MPI_Datatype mpi_type;	
 
-	int error, myid;
+  int error, myid;
 
-	count = nbytes = mpi_type = 0;
-	error = 0, myid = -1;
+  count = nbytes = mpi_type = 0;
+  error = 0, myid = -1;
 
-	/* Process the parameters. */
-	if (!PyArg_ParseTuple(args, "O", &array))
-		return NULL;
+  /* Process the parameters. */
+  if (!PyArg_ParseTuple(args, "O", &array))
+    return NULL;
 
-	/* Input check and determination of MPI type */          
-	mpi_type = type_map(array, &count);
-	if (!mpi_type) return NULL;
-	
-	/* Compute number of bytes. */
-	error = MPI_Type_size(mpi_type, &nbytes);
-	buf_size += (nbytes * count + MPI_BSEND_OVERHEAD);
+  /* Input check and determination of MPI type */          
+  mpi_type = type_map(array, &count);
+  if (!mpi_type) 
+    return NULL;
 
-	if (error != 0) {
-		MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-		sprintf(errmsg, "Proc %d: array_push_for_alloc_and_attach: MPI_Type_size \
-										failed with error code %d\n", myid, error);
-		PyErr_SetString(PyExc_RuntimeError, errmsg);	//  Raise ValueError, errmsg
-		return NULL;
-	}  
+  /* Compute number of bytes. */
+  error = MPI_Type_size(mpi_type, &nbytes);
+  buf_size += (nbytes * count + MPI_BSEND_OVERHEAD);
 
-	//return Py_BuildValue("i", buf_size);
-	Py_INCREF(Py_None);
-	return (Py_None);
+  if (error != 0) {
+    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
+    sprintf(errmsg, "Proc %d: array_push_for_alloc_and_attach: \
+	        MPI_Type_size failed with error code %d\n", myid, error);
+    PyErr_SetString(PyExc_RuntimeError, errmsg); // Raise ValueError, errmsg
+    return NULL;
+  }  
+
+  return Py_BuildValue("i", buf_size);
 }
 
 /*
@@ -502,35 +498,35 @@ static PyObject *array_push_for_alloc_and_attach(PyObject *self, PyObject *args)
 
 static PyObject *mpi_alloc_and_attach(PyObject *self, PyObject *args) {
 	
-	//int count = 0;
-	int error, myid;
+  //int count = 0;
+  int error, myid;
 
-	/* Process input parameters. */
-	//if (!PyArg_ParseTuple(args, "i", &count))
-	//	return NULL;
+  /* Process input parameters. */
+  //if (!PyArg_ParseTuple(args, "i", &count))
+  //    return NULL;
 
-	/* Allocate MPI_Bsend()'s buffer. */
-	pt_buf = (void *) malloc (buf_size);
+  /* Allocate MPI_Bsend()'s buffer. */
+  pt_buf = (void *) malloc (buf_size);
 
- 	if (pt_buf == NULL) {
-   	printf("mpi_alloc_and_attach: malloc: NOT ENOUGH MEMORY TO ALLOCATE MPI \
-										BSEND BUFFER ! \n");
-   	exit(1);
- 	}
+  if (pt_buf == NULL) {
+    printf("mpi_alloc_and_attach: malloc: NOT ENOUGH MEMORY TO ALLOCATE \
+            MPI BSEND BUFFER ! \n");
+    exit(1);
+  }
 
-	/* Attach MPI_Bsend()'s buffer. */
-	error = MPI_Buffer_attach(pt_buf, buf_size);
+  /* Attach MPI_Bsend()'s buffer. */
+  error = MPI_Buffer_attach(pt_buf, buf_size);
 
-	if (error != 0) {
-		MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-		sprintf(errmsg, "Proc %d: mpi_alloc_and_attach: MPI_Buffer_attach: failed \
-										with error code %d\n", myid, error);
-		PyErr_SetString(PyExc_RuntimeError, errmsg);    // Raise ValueError, errmsg
-		return NULL;
-	}  
+  if (error != 0) {
+    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
+    sprintf(errmsg, "Proc %d: mpi_alloc_and_attach: MPI_Buffer_attach: \
+	                 failed with error code %d\n", myid, error);
+    PyErr_SetString(PyExc_RuntimeError, errmsg); // Raise ValueError, errmsg
+    return NULL;
+  }  
 
-	Py_INCREF(Py_None);
-	return (Py_None);
+  Py_INCREF(Py_None);
+  return (Py_None);
 }
 
 /*
@@ -544,15 +540,15 @@ static PyObject *mpi_alloc_and_attach(PyObject *self, PyObject *args) {
  *
  */
 static PyObject *mpi_detach_and_dealloc(PyObject *self, PyObject *args) {
-	MPI_Buffer_detach(&pt_buf, &buf_size);
+  MPI_Buffer_detach(&pt_buf, &buf_size);
 
-	free(pt_buf);
+  free(pt_buf);
+  pt_buf = NULL;
 
-	pt_buf = NULL;
-	buf_size = 0;
+  buf_size = 0;
 
-	Py_INCREF(Py_None);
-	return (Py_None);
+  Py_INCREF(Py_None);
+  return (Py_None);
 }
 
 /*
@@ -564,26 +560,26 @@ static PyObject *mpi_detach_and_dealloc(PyObject *self, PyObject *args) {
  *
  */
 static PyObject *mpi_attach(PyObject *self, PyObject *args) {
-	int error, myid;
-	
-	error = MPI_Buffer_attach(pt_buf, buf_size);
+  int error, myid;
 
-	if (error != 0) {
-		MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-		sprintf(errmsg, "Proc %d: mpi_attach: MPI_Buffer_attach: failed with \
-										error code %d\n", myid, error);
-		PyErr_SetString(PyExc_RuntimeError, errmsg);	// Raise ValueError, errmsg
-		return NULL;
-	}  
+  error = MPI_Buffer_attach(pt_buf, buf_size);
 
-	Py_INCREF(Py_None);
-	return (Py_None);
+  if (error != 0) {
+    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
+    sprintf(errmsg, "Proc %d: mpi_attach: MPI_Buffer_attach: failed with \
+                     error code %d\n", myid, error);
+    PyErr_SetString(PyExc_RuntimeError, errmsg); // Raise ValueError, errmsg
+    return NULL;
+  }  
+
+  Py_INCREF(Py_None);
+  return (Py_None);
 }
 
 /*
  * 'mpi_detach'
  *
- * Detache a buffer after an MPI_Bsend().
+ * Detach a buffer after an MPI_Bsend().
  *
  * Return value: 'PyNone'.
  *
@@ -597,29 +593,41 @@ static PyObject *mpi_detach(PyObject *self, PyObject *args) {
 }
 
 /*
- * Allocates 'pt_buf'
+ * Allocates 'pt_buf'.
  *
- * Return value: 'PyNone'.
+ * Default: allocates a buffer of size equal to 'buf_size' (in bytes).
+ * mpi_attach() has an optional parameter which, if set, overrides the 
+ * size specified by 'buf_size'.
+ *
+ * Return value: 'buf_size'.
  *
  */
 static PyObject *mpi_alloc(PyObject *self, PyObject *args) {
-	int nbytes;		/* Number of bytes we wish to allocate. */
+  int nbytes = -1;	/* Number of bytes we wish to allocate. */
 
-	/* process the parameters */
-	if (!PyArg_ParseTuple(args, "i", &nbytes))
-		return NULL;
+  /* Process the parameters. */
+  if (!PyArg_ParseTuple(args, "|i", &nbytes))
+    return NULL;
 
-	buf_size = nbytes;
+  if ((nbytes < 0) && (buf_size <=0)) {
+    printf("mpi_alloc: malloc: BUFFER SIZE MUST BE SET EITHER THROUGH \
+            push_for_alloc() OR DIRECTLY VIA alloc()'s OPTIONAL PARMAMETER.\n");
+    return NULL;
+  }
 
-	pt_buf = (void *) malloc (buf_size);
- 	if (pt_buf == NULL) {
-   	printf("mpi_alloc: malloc: NOT ENOUGH MEMORY TO ALLOCATE MPI BSEND \
-										BUFFER ! \n");
-   	exit(1);
- 	}
+  /* Override 'buf_size' value. */
+  if (nbytes > 0) {
+    buf_size = nbytes;
+  }
 
-	Py_INCREF(Py_None);
-	return (Py_None);
+  pt_buf = (void *) malloc (buf_size);
+  if (pt_buf == NULL) {
+    printf("mpi_alloc: malloc: NOT ENOUGH MEMORY TO ALLOCATE MPI BSEND \
+            BUFFER ! \n");
+    exit(1);
+  }
+
+  return Py_BuildValue("i", buf_size);
 }
 
 /*
@@ -627,11 +635,13 @@ static PyObject *mpi_alloc(PyObject *self, PyObject *args) {
  */
 
 static PyObject *mpi_dealloc(PyObject *self, PyObject *args) {
-	free(pt_buf);
-	pt_buf = NULL;
+  free(pt_buf);
+  pt_buf = NULL;
+  
+  buf_size = 0;
 
-	Py_INCREF(Py_None);
-	return (Py_None);
+  Py_INCREF(Py_None);
+  return (Py_None);
 }
 
 /**********************************************************/
@@ -1087,13 +1097,17 @@ static struct PyMethodDef MethodTable[] = {
   {"scatter_array", scatter_array, METH_VARARGS},              
   {"gather_array", gather_array, METH_VARARGS},              
   {"reduce_array", reduce_array, METH_VARARGS},              
-	/* Functions providing 'MPI_Bsend' support. */
+  /* Functions providing 'MPI_Bsend' support. */
   {"bsend_string", bsend_string, METH_VARARGS},
   {"bsend_array", bsend_array, METH_VARARGS},
   {"string_push_for_alloc_and_attach", string_push_for_alloc_and_attach, METH_VARARGS},
   {"array_push_for_alloc_and_attach", array_push_for_alloc_and_attach, METH_VARARGS},
   {"mpi_alloc_and_attach", mpi_alloc_and_attach, METH_VARARGS},
   {"mpi_detach_and_dealloc", mpi_detach_and_dealloc, METH_VARARGS},
+  {"mpi_alloc", mpi_alloc, METH_VARARGS},
+  {"mpi_dealloc", mpi_dealloc, METH_VARARGS},
+  {"mpi_attach", mpi_attach, METH_VARARGS},
+  {"mpi_detach", mpi_detach, METH_VARARGS},
   {NULL, NULL}
 };
 

@@ -412,7 +412,7 @@ def bsend(x, destination, use_buffer=False, vanilla=False,
 
     import types, string
         
-    #Input check
+    # Input check.
     errmsg = 'Destination id (%s) must be an integer.' %destination
     assert type(destination) == types.IntType, errmsg
     
@@ -437,17 +437,39 @@ def bsend(x, destination, use_buffer=False, vanilla=False,
     else:
         raise 'Unknown protocol: %s' %protocol
 
-def push_for_alloc(x, bypass=False):
+def push_for_alloc(x, vanilla=False, use_buffer=False, bypass=False):
     if bypass is True:
         return array_push_for_alloc_and_attach(x)
     else:
-        return string_push_for_alloc_and_attach(x)
+        # Create metadata about object and retrieve protocol.
+        control_info, x = create_control_info(x, vanilla, return_object=True)
+        protocol = control_info[0]
+      
+		# According to protocol, use appropriate function.
+        if protocol == 'array':
+            return array_push_for_alloc_and_attach(x)
+        elif protocol in ['string', 'vanilla']:
+            return string_push_for_alloc_and_attach(x)
+        else:
+            raise 'Unknown protocol: %s' %protocol
 
 def alloc_and_attach():
     mpi_alloc_and_attach()
 
 def detach_and_dealloc():
     mpi_detach_and_dealloc()
+
+def alloc(nbytes=-1):
+    return mpi_alloc(nbytes)
+
+def dealloc():
+    mpi_dealloc()
+
+def attach():
+    mpi_attach()
+
+def detach():
+    mpi_detach()
 
 
 #---------------------------------------------------------
@@ -831,6 +853,7 @@ else:
          reduce_array,\
 	 bsend_string, bsend_array, \
 	 mpi_alloc_and_attach, mpi_detach_and_dealloc, \
+	 mpi_alloc, mpi_dealloc, mpi_attach, mpi_detach, \
 	 string_push_for_alloc_and_attach, array_push_for_alloc_and_attach, \
          MPI_ANY_TAG as any_tag, MPI_TAG_UB as max_tag,\
          MPI_ANY_SOURCE as any_source,\
