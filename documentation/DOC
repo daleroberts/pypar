@@ -99,7 +99,7 @@ PROGRAMMING FOR EFFICIENCY
   to Numeric arrays and specifying receive buffers whenever possible.
 
   To send a Numeric array A to processor p, write
-    pypar.raw_send(A, p, use_buffer=True)
+    pypar.send(A, p, use_buffer=True)
   and to receive the array from processor q, write
     X = pypar.receive(q, buffer=X)    
   Note that X acts as a buffer and must be pre-allocated prior to the 
@@ -259,7 +259,7 @@ DATA TYPES
   on any datatype.     
   
 STATUS OBJECT
-  A status object can be optionally returned from receive and raw_receive by
+  A status object can be optionally returned from receive by
   specifying return_status=True in the call.
   The status object can subsequently be queried for information about the communication.
   The fields are:	
