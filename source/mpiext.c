@@ -333,15 +333,9 @@ static PyObject *bsend_string(PyObject *self, PyObject *args) {
   if (!PyArg_ParseTuple(args, "s#ii", &s, &length, &destination, &tag))
     return NULL;
 
-  //MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-  //printf("bsend_string: MPI_Bsend: BEFORE rank %d send to %d, count %d \n", \ 
-  //		  myid, destination, length);
-
   /* Call the MPI routine. */
   error = MPI_Bsend(s, length, MPI_CHAR, destination, tag, MPI_COMM_WORLD);
 
-  //printf("bsend_string: MPI_Bsend: AFTER rank %d send to %d, count %d \n", \ 
-  //        myid, destination, length);
 
   if (error != 0) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
@@ -391,15 +385,11 @@ static PyObject *bsend_array(PyObject *self, PyObject *args) {
 
   /* call the MPI routine */
   
-  //MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-  //printf("bsend_array: MPI_Bsend: BEFORE rank %d send to %d, count %d \n", \
-  //        myid, destination, length);
-  
   error = MPI_Bsend(x->data, count, mpi_type, destination, tag, \
           MPI_COMM_WORLD);
 
-  //printf("bsend_array: MPI_Bsend: AFTER rank %d send to %d, count %d \n", \
-  //       myid, destination, length);
+  /*printf("bsend_array: MPI_Bsend: AFTER rank %d send to %d, count %d \n", \
+            myid, destination, length); */
 
   Py_DECREF(x); 	   
   
@@ -459,8 +449,9 @@ static PyObject *array_push_for_alloc_and_attach(PyObject *self, PyObject *args)
 
   int error, myid;
 
-  count = nbytes = mpi_type = 0;
-  error = 0, myid = -1;
+  count = nbytes = error = 0;
+  mpi_type = (MPI_Datatype) 0;
+  myid = -1;
 
   /* Process the parameters. */
   if (!PyArg_ParseTuple(args, "O", &array))
