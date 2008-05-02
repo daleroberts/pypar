@@ -25,7 +25,6 @@ t0 = time.time()
 A = calculate_region(real_min, real_max, imag_min, imag_max, kmax, M, N)
 print 'Computed region in %.2f seconds' %(time.time()-t0)
 
-print A
 # Plot result
 plot(A, kmax)
 
