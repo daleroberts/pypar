@@ -165,7 +165,9 @@ def receive(source, buffer=None, vanilla=False, tag=default_tag,
     
         #Either receive or create metadata about object to receive
         if buffer is None:
-            protocol, typecode, size, shape = receive_control_info(source)
+            control_info, source = receive_control_info(source,
+                                                        return_source=True)
+            protocol, typecode, size, shape = control_info
         else:  
             protocol, typecode, size, shape = create_control_info(buffer, vanilla)
     
@@ -185,15 +187,18 @@ def receive(source, buffer=None, vanilla=False, tag=default_tag,
             stat = receive_string(buffer, source, tag)
     
         elif protocol == 'vanilla':
-            from cPickle import dumps, loads     
+            from cPickle import dumps, loads, UnpicklingError
             if buffer is None:
                 s = ' '*size      
             else:
-                s = dumps(buffer, 1)
+                s = dumps(buffer, protocol=2)
                 s = s + ' '*int(0.1*len(s)) #safety
             
             stat = receive_string(s, source, tag)
-            buffer = loads(s)  #Replace buffer with received result
+            try:
+                buffer = loads(s)   #Replace buffer with received result
+            except UnpicklingError, err:
+                raise UnpicklingError(str(err) + " - '%s'" % s)
         else:
             raise 'Unknown protocol: %s' %protocol
 
@@ -244,12 +249,15 @@ def broadcast(buffer, root, vanilla=False, bypass=False):
     elif protocol == 'string':
         broadcast_string(buffer, root)          
     elif protocol == 'vanilla':
-        from cPickle import loads, dumps 
-        s = dumps(buffer, 1)
+        from cPickle import loads, dumps, UnpicklingError
+        s = dumps(buffer, protocol=2)
         s = s + ' '*int(0.1*len(s)) #safety
         
         broadcast_string(s, root)
-        buffer = loads(s)
+        try:
+            buffer = loads(s)
+        except UnpicklingError, err:
+            raise UnpicklingError(str(err) + " - '%s'" % s)
     else:
         raise 'Unknown protocol: %s' %protocol  
       
@@ -635,8 +643,8 @@ def create_control_info(x, vanilla=0, return_object=False):
 
     #Pickle general structures using the vanilla protocol                
     if protocol == 'vanilla':                    
-        from cPickle import dumps     
-        x = dumps(x, 1)
+        from cPickle import dumps
+        x = dumps(x, protocol=2)
         size = len(x) # Let count be length of pickled object
 
     #Return    
@@ -667,9 +675,15 @@ def send_control_info(control_info, destination):
     send_string(control_msg, destination, control_tag)
 
   
-def receive_control_info(source):
+def receive_control_info(source, return_source=False):
     """Receive control info from source
+
+    The optional argument (due to Jim Bosch) also returns the actual source node
+    which can be used to require that the data message come from the same node.
     """
+
+    # FIXME (Ole): Perhaps we should include actual source in the control info?
+    
     import string
   
     msg = ' '*control_data_max_size
@@ -686,8 +700,10 @@ def receive_control_info(source):
     control_info[2] = eval(control_info[2]) #Convert back to int
     control_info[3] = eval(control_info[3]) #Convert back to tuple
 
-
-    return control_info
+    if return_source:
+        return control_info, int(stat[0])
+    else:
+        return control_info
 
 
 #----------------------------------------------------------------------------
