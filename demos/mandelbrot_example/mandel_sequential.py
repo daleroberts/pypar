@@ -12,6 +12,7 @@ import time
 # User definable parameters
 kmax = 2**15  # Maximal number of iterations (=number of colors)
 M = N = 700   # width = height = N (200, 400, 600, 700 are good)
+#M = N = 400   # width = height = N (200, 400, 600, 700 are good)
 
 # Region in complex plane
 real_min = -2.0
@@ -24,6 +25,7 @@ t0 = time.time()
 A = calculate_region(real_min, real_max, imag_min, imag_max, kmax, M, N)
 print 'Computed region in %.2f seconds' %(time.time()-t0)
 
+print A
 # Plot result
 plot(A, kmax)
 

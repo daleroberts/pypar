@@ -163,7 +163,7 @@ def receive(source, buffer=None, vanilla=False, tag=default_tag,
         assert tag != control_tag, errmsg
     
     
-        #Either receive or create metadata about objetc to receive
+        #Either receive or create metadata about object to receive
         if buffer is None:
             protocol, typecode, size, shape = receive_control_info(source)
         else:  

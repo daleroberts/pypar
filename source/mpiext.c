@@ -31,7 +31,7 @@
 #include "mpi.h"
 #include "math.h"
 #include "numpy/arrayobject.h"
-//#include "Numeric/arrayobject.h"
+
 
 /* to handle MPI constants export (shamelessly stolen from _cursesmodule.c)*/
 #define SetDictInt(string,ch) \
@@ -1134,7 +1134,7 @@ void initmpiext(void){
 
   /*SetDictInt("MPI_COMM_WORLD", MPI_COMM_WORLD);  */
    
-  import_array();     /*Necessary for handling of NumPY structures  */
+  import_array();     /*Necessary for handling of numpy structures  */
 }
 
  

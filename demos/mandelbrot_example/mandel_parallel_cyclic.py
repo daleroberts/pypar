@@ -36,7 +36,7 @@ A = calculate_region_cyclic(real_min, real_max, imag_min,
                             imag_max, kmax,
                             M, N, p, P)
 
-print 'Processor %d: time = %.2f' %(p, pypar.Wtime() - t)
+print 'Processor %d: time = %.2f' %(p, pypar.time() - t)
 
 
 # Communication phase
@@ -44,7 +44,7 @@ if p == 0:
     for d in range(1, P):
         A += pypar.receive(source=d)
 
-    print 'Computed region in %.2f seconds' %(pypar.Wtime()-t)
+    print 'Computed region in %.2f seconds' %(pypar.time()-t)
     plot(A, kmax)        
 else:
     pypar.send(A, destination=0)

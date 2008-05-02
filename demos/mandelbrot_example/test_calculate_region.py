@@ -3,7 +3,7 @@
 """
 
 import unittest
-import Numeric
+import numpy
 from mandelbrot import calculate_region
 
 
@@ -26,7 +26,7 @@ class TestCase(unittest.TestCase):
         A = calculate_region(real_min, real_max, 
 		imag_min, imag_max, kmax, M, N)
 
-	assert Numeric.allclose(A,  		
+	assert numpy.allclose(A,  		
 	[[ 1,  1,  1,  1,  1],
  	[ 1,  3,  5,  5,  3],
  	[ 2,  4,  9,  9,  4],
@@ -45,7 +45,7 @@ class TestCase(unittest.TestCase):
         A = calculate_region(real_min, real_max, 
 		imag_min, imag_max, kmax, M, N)
 
-	assert Numeric.allclose(A,  		
+	assert numpy.allclose(A,  		
 	[[ 1,  1,  1,  1,  1],
  	[ 1,  3,  5,  5,  3],
  	[ 2,  4,  9,  9,  4],
@@ -64,7 +64,7 @@ class TestCase(unittest.TestCase):
         A = calculate_region(real_min, real_max, 
 		imag_min, imag_max, kmax, M, N)
 
-	assert Numeric.allclose(A[:, 50], 
+	assert numpy.allclose(A[:, 50], 
 	[32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 
 	 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,
          32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 

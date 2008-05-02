@@ -23,7 +23,7 @@
 # Version 1.0 October 2001
 # =============================================================================
 
-"""Module install.py - Compile C extension for pypar
+"""Module compile_pypar_locally.py - Compile C extension for pypar
 """
 
 import os, sys      

@@ -43,7 +43,7 @@ def calculate_region(real_min, real_max, imag_min, imag_max, kmax, M, N,
        If Mlo, Mhi or Nlo, Nhi are specified computed only given subinterval.
     """
 
-    from Numeric import zeros
+    from numpy import zeros
     from mandel_ext import calculate_point  #Fast C implementation
 
     if Mhi is None: Mhi = M
@@ -52,7 +52,7 @@ def calculate_region(real_min, real_max, imag_min, imag_max, kmax, M, N,
     real_step = (real_max-real_min)/M
     imag_step = (imag_max-imag_min)/N
 
-    A = zeros((M, N))   # Create M x N matrix
+    A = zeros((M, N), dtype='i')   # Create M x N matrix
 
     for i in range(Mlo, Mhi):
         for j in range(Nlo, Nhi):
@@ -72,13 +72,13 @@ def calculate_region_cyclic(real_min, real_max, imag_min, imag_max, kmax,
     """
 
 
-    from Numeric import zeros
+    from numpy import zeros
     from mandel_ext import calculate_point  #Fast C implementation
 
     real_step = (real_max-real_min)/M
     imag_step = (imag_max-imag_min)/N
 
-    A = zeros((M, N))   # Create M x N matrix
+    A = zeros((M, N), dtype='i')   # Create M x N matrix
 
     if row:
         for i in range(M):

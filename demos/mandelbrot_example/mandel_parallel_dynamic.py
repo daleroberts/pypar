@@ -42,7 +42,7 @@ assert P > 1, 'Must have at least one slave'
 assert B > P-1, 'Must have more work packets than slaves'
 
 
-A = numpy.zeros((M,N))
+A = numpy.zeros((M,N), dtype='i')
 if p == 0:
     # Create work pool (B blocks)
     # using balanced work partitioning
@@ -75,7 +75,7 @@ if p == 0:
             pypar.send(None, destination=d, tag=work_tag) 
             terminated += 1
         
-    print 'Computed region in %.2f seconds' %(pypar.Wtime()-t)
+    print 'Computed region in %.2f seconds' %(pypar.time()-t)
     plot(A, kmax)        
 
 else:
@@ -84,7 +84,7 @@ else:
         W = pypar.receive(source=0, tag=work_tag)
         
         if W is None:
-            print 'Slave p%d finished: time = %.2f' %(p, pypar.Wtime() - t)
+            print 'Slave p%d finished: time = %.2f' %(p, pypar.time() - t)
             break
 
         #Compute allocated work

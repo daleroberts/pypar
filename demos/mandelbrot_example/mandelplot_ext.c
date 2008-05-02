@@ -12,10 +12,10 @@
 	
 	
 #include "Python.h"
-#include "Numeric/arrayobject.h"
+#include "numpy/arrayobject.h"
 
 // Computational function
-int  _normalise_and_convert(double*  A, 
+int  _normalise_and_convert(double* A, 
 			    int M, 
 			    int N,
 			    PyObject* L, 
@@ -84,14 +84,14 @@ PyObject *normalise_and_convert(PyObject *self, PyObject *args) {
   if (!PyArg_ParseTuple(args, "OOiid", &A, &L, &kmax, &rgbmax, &exponent))
     return NULL;
     
-  
   M = A -> dimensions[0];
   N = A -> dimensions[1];  
   
-  
-  // Call underlying routine
-  _normalise_and_convert((double *) A -> data, M, N, L, kmax, rgbmax, exponent); 
 
+  // Call underlying routine
+  _normalise_and_convert((double *) A -> data, M, N, L, 
+			 kmax, rgbmax, exponent); 
+  
   // Return None
   return Py_BuildValue("");
 }
@@ -107,7 +107,7 @@ static struct PyMethodDef MethodTable[] = {
 // Module initialisation   
 void initmandelplot_ext(void){
   Py_InitModule("mandelplot_ext", MethodTable);
-  import_array();     //Necessary for handling of NumPY structures
+  import_array();     //Necessary for handling of numpy structures
 }
 
 

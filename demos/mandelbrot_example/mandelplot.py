@@ -18,7 +18,7 @@ def plot(A, kmax = None):
     """
     
     from Tkinter import Frame, Canvas, TOP, NW, PhotoImage
-    from Numeric import transpose, Float
+    from numpy import transpose
     from Image import new             # PIL    
     import time
 
@@ -36,15 +36,16 @@ def plot(A, kmax = None):
     # Input check
     assert len(A.shape) == 2, 'Matrix must be 2 dimensional'
     assert A.shape[0] == A.shape[1], 'Matrix must be square'
-    assert A.typecode() in 'ilu1swb', 'A must contain integers'
-    assert min(min(A))>=0, 'A must be non-negative'
+    msg = 'A must contain integers, I got %c' %A.dtype.char
+    assert A.dtype.char in 'iIbBhHl', msg
+    assert min(A.flat)>=0, 'A must be non-negative'
 
     if kmax is None:
-        kmax = max(max(A))
+        kmax = max(A.flat)
 
     # Convert values from A into RGB values (0 to 255) in each band
     N = A.shape[0]
-    A = transpose(A).astype(Float)          
+    A = transpose(A).astype('d') # Cast as double         
 
     im = new("RGB", A.shape)
 
@@ -52,28 +53,28 @@ def plot(A, kmax = None):
     L = []        
     try:
         from mandelplot_ext import normalise_and_convert
-	normalise_and_convert(A, L, kmax, rgbmax, exponent)
-	
+        normalise_and_convert(A, L, kmax, rgbmax, exponent)
+        
     except:
-    	print 'WARNING: Could not import C extension from mandelplot_ext'
-		
+        print 'WARNING: Could not import C extension from mandelplot_ext'
+                
     
-    	for i in range(A.shape[0]):
-    	    for j in range(A.shape[1]):    
-    		
-    		c = A[i,j]/kmax
+        for i in range(A.shape[0]):
+            for j in range(A.shape[1]):    
+                
+                c = A[i,j]/kmax
 
-    		if c == 1: c = 0       #Map convergent point (kmax) to black (0)
-    		c = c**exponent        #Morph slightly
-		
-    		c = int(c * rgbmax)    #Normalise to 256 levels per channel
- 		
-    		red   = c / 256 / 256
-    		green = (c / 256) % 256
-    		blue  = c % 256
+                if c == 1: c = 0       #Map convergent point (kmax) to black (0)
+                c = c**exponent        #Morph slightly
+                
+                c = int(c * rgbmax)    #Normalise to 256 levels per channel
+                
+                red   = c / 256 / 256
+                green = (c / 256) % 256
+                blue  = c % 256
     
- 		L.append( (red, green, blue) )
-	    
+                L.append( (red, green, blue) )
+            
             
     
     # Save image to file        
@@ -84,8 +85,8 @@ def plot(A, kmax = None):
     # Display image on screen
     #answer = raw_input('Show image [Y/N][Y]?')
     #if answer.lower() in ['n', 'no']:
-    #	import sys
-    #	sys.exit()
+    #   import sys
+    #   sys.exit()
 
     # Try to display using a image viewer
     import os
