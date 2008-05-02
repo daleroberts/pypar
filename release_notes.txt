@@ -1,0 +1,8 @@
+
+Release notes from version 36 to 49:	
+
+Implemented race-condition patch from Jim Bosch
+Functionality and demo for Bsend by C Makassikis
+Deprecated obsolete functions 
+Migrated Mandelbrot demos to numpy
+Fixed demo3.py for version 2 thanks to Felix Richter
