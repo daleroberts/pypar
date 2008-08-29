@@ -16,10 +16,10 @@ import pypar
 
 myid =    pypar.rank()
 numproc = pypar.size()
-node =    pypar.Get_processor_name()
+node =    pypar.get_processor_name()
 
 print "I am processor %d of %d on node %s" %(myid, numproc, node)
 if myid == 0:
     print 'Maximal tag is %d' %pypar.max_tag
-pypar.Finalize()
+pypar.finalize()
 
