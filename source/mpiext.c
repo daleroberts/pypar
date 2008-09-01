@@ -99,6 +99,7 @@ MPI_Datatype type_map(PyArrayObject *x, int *count) {
   
   int py_type;
   MPI_Datatype mpi_type;
+  char err_msg[64];
 
   *count = length(x);
   
@@ -119,11 +120,14 @@ MPI_Datatype type_map(PyArrayObject *x, int *count) {
     mpi_type = MPI_FLOAT;
     (*count) *= 2;
   } else {
-    PyErr_SetString(PyExc_ValueError, "Array must be of type int or float");
+    sprintf(err_msg, 
+	    "Array must be of type int or float. I got py_type == %d", 
+	    py_type);
+    PyErr_SetString(PyExc_ValueError, err_msg);
     return NULL;
   }      
 
-  //printf("Types: py_type=%d, mpi_type=%d\n", py_type, mpi_type);
+  //printf("Types: py_type=%d, mpi_type=%d\n", py_type, (int) mpi_type);
   
   return mpi_type;
 }    
