@@ -234,23 +234,25 @@ if __name__ == '__main__':
         os.chdir(release_dir)
         print 'Reading from', os.getcwd()
 
+        s = 'rsync -avP -e ssh *.tgz uniomni@frs.sourceforge.net:uploads/'
+        print s
+        os.system(s)
 
-        from ftplib import FTP
-        ftp = FTP('upload.sourceforge.net')
-        print ftp.login() # Anonymous
-        print ftp.cwd('incoming')
-
-
-        for filename in os.listdir('.'):
-            print 'Uploading %s... ' %filename,
-            stdout.flush()
-
-            fid=open(filename, 'rb')
-            print ftp.storbinary('STOR %s' %filename, fid)
-            fid.close()
-
-        print 'FTP done'
-        print ftp.quit()
+        #from ftplib import FTP
+        #ftp = FTP('upload.sourceforge.net')
+        #print ftp.login() # Anonymous
+        #print ftp.cwd('incoming')
+        #
+        #for filename in os.listdir('.'):
+        #    print 'Uploading %s... ' %filename,
+        #    stdout.flush()
+        #
+        #    fid=open(filename, 'rb')
+        #    print ftp.storbinary('STOR %s' %filename, fid)
+        #    fid.close()
+        #
+        #print 'FTP done'
+        #print ftp.quit()
 
         print
         print lsep
