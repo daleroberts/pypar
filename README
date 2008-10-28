@@ -67,6 +67,7 @@ PRE-REQUISITES (on all nodes)
     MPICH on Windows (NT/2000)
     MPICH for Darwin (Mac OS)
     LAM/MPI with Linux on Opteron 64 bit
+    OPENMPI with Ubuntu Linux (32 bit)
    
   
 INSTALL
@@ -101,10 +102,37 @@ INSTALL
   type make.   
   See installation notes below about compiling under mpi. 
 
+
   
+COMPILE PYPAR LOCALLY
+
+  If you don't want to install pypar using distutils or if you encounter 
+  problems doing so, you can compile it locally using the the script 
+  compile_pypar_locally.py (located in the pypar source directory) 
+  is a non-distutils way of compiling the extension and will put the 
+  mpiext.so file in the current working dir.
+  With a PATH to that dir, you can run your pypar programs using the 
+  local installation.
+
+  
+    
 TESTING
   Pypar comes with a number of tests and demos available in the 
   examples directory - please try these to verify the installation.
+  
+  See also mandelbrot examples (in demos/mandelbrot_example) using different parallel 
+  approaches to compute the well-known fractal in parallel. 
+  Before running any of these you must compile their C extensions. This is done as follows:
+  
+  python compile_mandelbrot_c_extensions.py
+  
+  
+  In particular the script mandel_parallel_cyclic.py should produce almost perfect speedup.
+  To run it on 2 processors, write
+  
+  mpirun -np 2 python mandel_parallel_dynamic.py
+   
+  
   
 
 RUNNING PYTHON MPI JOBS 
@@ -142,7 +170,7 @@ RUNNING PYTHON MPI JOBS
   system load.   
 
   An example of a master-slave program using pypar is available in demo2.py.  
-  
+
   
 INSTALLATION NOTES (If all else fails)
 
@@ -172,9 +200,15 @@ On Linux (using LAM-MPI) it is
  Start processors using
  lamboot -v lamhosts  
  
-The script install.py (which is using compile.py) is a non-distutils 
-way of compiling the extension.
+On Linux (using OPENMPI) the compilation and executions steps are as with LAM-MPI, but
+there is no need for lamboot anymore. With OPENMPI you may need to uncomment the line
+ 
+  btl = ^openib
 
+in /etc/openmpi/openmpi-mca-params.conf to get rid of the warning "OpenIB on host ... was unable to find any HCAs." Another warning, "unable to open osc pt2pt: file not found (ignored)", is a known openmpi problem with an unknown solution. 
+See http://code.google.com/p/petsc4py/wiki/InstallationNotes for more details.
+
+ 
 
 HOW DOES PYPAR WORK?
 
