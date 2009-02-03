@@ -17,7 +17,7 @@ def plot(A, kmax = None):
        Ole Nielsen, SUT 2003
     """
     
-    from Tkinter import Frame, Canvas, TOP, NW, PhotoImage
+    #from Tkinter import Frame, Canvas, TOP, NW, PhotoImage
     from numpy import transpose
     from Image import new             # PIL    
     import time

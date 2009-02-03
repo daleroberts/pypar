@@ -26,8 +26,9 @@ A = calculate_region(real_min, real_max, imag_min, imag_max, kmax, M, N)
 print 'Computed region in %.2f seconds' %(time.time()-t0)
 
 # Plot result
-plot(A, kmax)
-
-
+try:
+    plot(A, kmax)
+except:
+    pass    
 
 

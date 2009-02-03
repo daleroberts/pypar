@@ -45,7 +45,11 @@ if p == 0:
         A += pypar.receive(source=d)
 
     print 'Computed region in %.2f seconds' %(pypar.time()-t)
-    plot(A, kmax)        
+    try:
+        plot(A, kmax)
+    except:
+        pass
+    
 else:
     pypar.send(A, destination=0)
 

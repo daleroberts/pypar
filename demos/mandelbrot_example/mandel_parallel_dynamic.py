@@ -76,8 +76,10 @@ if p == 0:
             terminated += 1
         
     print 'Computed region in %.2f seconds' %(pypar.time()-t)
-    plot(A, kmax)        
-
+    try:
+        plot(A, kmax)
+    except:
+        pass    
 else:
     while(True):
         #Receive work (or None)
