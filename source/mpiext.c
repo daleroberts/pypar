@@ -20,7 +20,7 @@
 /*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307*/
 /*                                                                      */
 /*                                                                 	*/
-/* Contact address: Ole.Nielsen@anu.edu.au                              */
+/* Contact address: Ole.Moller.Nielsen@gmail.com                        */
 /*                                                                 	*/
 /* version (see __version__ in pypar.py)                                */
 /* date (see __date__ in pypar.py)                                      */
