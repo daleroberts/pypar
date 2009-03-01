@@ -150,11 +150,11 @@ if __name__ == "__main__":
     mpi_flags['inc_dirs'].append(numpy.get_include())
 
 
-    # setting some extra compile flags for AMD64, utilizing
+    # setting some extra compile flags for 64 bit architectures, utilizing
     # distutils.sysconfig to check which compiler to use
     if os.name == 'posix' and os.uname()[4] == 'x86_64':
         #Extra flags for 64 bit architectures    
-        extra_compile_args = [' -fPIC']
+        extra_compile_args = ['-fPIC']
         
 
         # NOTE: I think these compiler specific flags are 
