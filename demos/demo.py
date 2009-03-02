@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #########################################################
 #   
 #  Example: Running Python in parallel using pypar (MPI).

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-	
 """Parallel program computing the Mandelbrot set using static,
    cyclic load balancing.
 

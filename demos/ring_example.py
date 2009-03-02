@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import pypar                                       # Import module and initialise MPI 
 
 proc = pypar.size()                                # Number of processes as specified by mpirun

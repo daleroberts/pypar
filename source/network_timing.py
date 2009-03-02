@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Timing of MPI module for Python and estimation of latency and bandwidth
 # 
 # Send numerical array in a ring from processor 0 to 1 etc back to 0 

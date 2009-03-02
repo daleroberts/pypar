@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 Master/Slave Parallel decomposition sample
 

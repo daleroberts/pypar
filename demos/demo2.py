@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #########################################################
 #   
 #  Example: Distributing work in parallel using pypar (MPI).

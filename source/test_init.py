@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Inital test of MPI module 'pypar' for Python
 # 
 # Run as 

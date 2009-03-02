@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """Parallel program computing the Mandelbrot set using dynamic load balancing.
    Simplified version for use with exercise 15.
 

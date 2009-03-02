@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """Sequential program computing the Mandelbrot set.
 
 Ole Nielsen, SUT 2003

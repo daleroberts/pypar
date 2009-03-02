@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Examples of setup
 #
 # python setup.py install
