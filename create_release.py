@@ -17,6 +17,7 @@ This script assumes a Linux platform
 """
 
 from os import sep, system, remove, popen, chdir, getcwd, listdir
+from os.path import join
 from tempfile import mktemp
 from sys import platform, stdout
 
@@ -120,8 +121,11 @@ if __name__ == '__main__':
 
     distro_filename = 'pypar-%s.tgz' %revision
 
+    
+    
     # Create area directory
-    release_dir = '~/pypar_release_%s' %revision 
+    release_name = 'pypar_%s' %revision 
+    release_dir = '~/%s' %release_name 
     s = 'mkdir %s' %release_dir
     try:
         print s    
@@ -131,18 +135,32 @@ if __name__ == '__main__':
 
 
     # Export a clean directory tree from the working copy to a temporary dir
-    distro_dir = mktemp()
-    s = 'mkdir %s' %distro_dir
+    tmp_dir = mktemp()
+    s = 'mkdir %s' %tmp_dir
     print s    
     system(s)
+    
+    distro_dir = join(tmp_dir, release_name) 
+    s = 'mkdir %s' %distro_dir
+    print s    
+    system(s)    
 
+    
+    
 
     #-----------------------------
-    # Get pypar sourc
-    s = 'svn export -r %d source %s/pypar' %(svn_revision,
-                                             distro_dir) 
+    # Get pypar source
+    s = 'svn export -r %d source %s/source' %(svn_revision,
+                                              distro_dir) 
     print s
     system(s)
+    
+    #-----------------------------
+    # Copy license file to top dir   
+    s = 'cp %s/source/LICENSE %s' %(distro_dir, distro_dir)     
+    print s
+    system(s)    
+   
     
     #-----------------------------
     # Get demos
@@ -162,68 +180,19 @@ if __name__ == '__main__':
 
 
     # Zip everything up
-    s = 'cd %s;tar cvfz %s *' %(distro_dir, distro_filename)
+    s = 'cd %s; tar cvfz %s *' %(tmp_dir, distro_filename)
     print s
     system(s)
 
     # Move distro to release area
-    s = '/bin/mv %s/*.tgz %s' %(distro_dir, release_dir) 
+    s = '/bin/mv %s/*.tgz %s' %(tmp_dir, release_dir) 
     print s
     system(s)
 
     # Clean up
-    s = '/bin/rm -rf %s/pypar' %(distro_dir) 
+    s = '/bin/rm -rf %s/pypar' %(tmp_dir) 
     print s
     system(s)
-
-
-    #-----------------------------
-    # Get demos
-    #s = 'svn export -r %d demos %s/demos' %(svn_revision,
-    #                                        distro_dir) 
-    #print s
-    #system(s)
-
-    ## Zip it up
-    #s = 'cd %s;tar cvfz pypar_demos-%s.tgz *'\
-    #    %(distro_dir, revision)
-    #print s
-    #system(s)
-    
-    # Move distro to release area
-    #s = '/bin/mv %s/*.tgz %s' %(distro_dir, release_dir) 
-    #print s
-    #system(s)
-
-    # Clean up
-    #s = '/bin/rm -rf %s/demos' %(distro_dir) 
-    #print s
-    #system(s)
-
-
-    #-----------------------------
-    # Get documentation
-    #s = 'svn export -r %d documentation %s/documentation' %(svn_revision,
-    #                                                        distro_dir) 
-    #print s
-    #system(s)
-
-
-    ## Zip it up
-    #s = 'cd %s;tar cvfz pypar_documentation-%s.tgz *'\
-    #    %(distro_dir, revision)
-    #print s
-    #system(s)
-
-    # Move distro to release area
-    #s = '/bin/mv %s/*.tgz %s' %(distro_dir, release_dir) 
-    #print s
-    #system(s)
-
-    # Clean up
-    #s = '/bin/rm -rf %s/documentation' %(distro_dir) 
-    #print s
-    #system(s)
 
 
     #-----------------------------
