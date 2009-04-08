@@ -348,8 +348,8 @@ ACKNOWLEDGEMENTS
         collective communication stuff from version 1.1 and onwards.
     Prabhu Ramachandran (prabhu@aero.iitm.ernet.in)
         for making a proper distutils installation procedure
-    Simon D. W. Frost (sdfrost@ucsd.edu)
-        for testing pypar under Windows and adding installation procedure 
+    Simon D. W. Frost (sdfrost@ucsd.edu) and Vladimir Lazunin (lazunin@gmail.com) 
+        for testing pypar under Windows and creating the installation procedure 
     Jakob Schiotz (schiotz@fysik.dtu.dk) and Steven Farcy (steven@artabel.net) 
         for pointing out initial problems with pypar and MPICH.
     Markus Hegland (Markus.Hegland@anu.edu.au)
@@ -367,6 +367,7 @@ ACKNOWLEDGEMENTS
 	for pointing out the need for multi dimensional arrays and 
 	for suggesting an implementation in the 2D case.	
     J K Nilsen for support and compiler patches
+    Ross Wilson for designed the pypar logo in January 2009
     	
 	
 
