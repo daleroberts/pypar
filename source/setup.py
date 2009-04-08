@@ -109,7 +109,21 @@ def get_mpi_flags():
     print output
     if not output:
         if sys.platform=='win32': #From Simon Frost
-            output = "gcc -L$MPICH_DIR\SDK.gcc\lib -lmpich -I$MPICH_DIR\SDK.gcc\include"
+            #this didn't work on my machine (Vladimir Lazunin on April 7, 2009)
+            #output = "gcc -L$MPICH_DIR\SDK.gcc\lib -lmpich -I$MPICH_DIR\SDK.gcc\include"
+
+            #"MPICH_DIR" must be set manually in environment variables
+            mpi_dir = os.getenv("MPICH_DIR")
+
+            #for MPICH2
+            sdk_prefix = mpi_dir
+            lib_name = "mpi"
+
+            #for MPICH1
+            if os.path.exists(sdk_prefix + "\\SDK"):
+                sdk_prefix += "\\SDK"
+                lib_name = "mpich"
+            output = "gcc -L%(sdk_prefix)s\lib -l%(lib_name)s -I%(sdk_prefix)s\include" % {"sdk_prefix" : sdk_prefix, "lib_name" : lib_name}
         else:
             output = "cc -L/usr/opt/mpi -lmpi -lelan"
 
