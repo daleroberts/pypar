@@ -141,7 +141,7 @@ def get_mpi_flags():
             inc_dirs.append(f[2:])
         elif f[:2] == '-L':
             lib_dirs.append(f[2:])
-        elif f[:2] == '-l':
+        elif f[:2] == '-l' and f[-1] != "'": # Patched by Michael McKerns July 2009
             libs.append(f[2:])
         elif f[:2] == '-U':
             undef_macros.append(f[2:])
