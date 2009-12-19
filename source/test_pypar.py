@@ -820,21 +820,14 @@ if numproc > 1:
   
   # Create one (different) array on each processor
   #    
-  testArray = numpy.array(range(N)).astype('i') * (myid+1)
-  print myid, testArray, testArray.dtype.char
-  X = numpy.zeros(N).astype('i') # Buffer for results
-
-  print 'Type of A is ', testArray.dtype, testArray.dtype.char
-  print 'Type of X is ', X.dtype, X.dtype.char
-
-
-
+  testArray = numpy.array(range(N), 'i') * (myid+1)
+  X = numpy.zeros(N, 'i') # Buffer for results
 
   raw_reduce(testArray, X, pypar.SUM, 0)
   if myid == 0:
-    Y = numpy.zeros(N).astype('i')
+    Y = numpy.zeros(N, 'i')
     for i in range(numproc):
-      Y = Y+numpy.array(range(N)).astype('i')*(i+1)    
+      Y = Y + numpy.array(range(N), 'i')*(i+1)    
     assert numpy.allclose(X, Y)
     print "Raw reduce using pypar.SUM OK"
         

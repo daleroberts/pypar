@@ -888,6 +888,8 @@ static PyObject *reduce_array(PyObject *self, PyObject *args) {
     return NULL;  
   }
 
+  /* This error is caught at the pypar level - so we won't end up here
+     unless mpiext is being used independently */
   buffer_type = type_map(d, &count1);
   if (mpi_type != buffer_type) {
     sprintf(errmsg, "mpiext.c (reduce_array): Input array and buffer must be of the same type.");
