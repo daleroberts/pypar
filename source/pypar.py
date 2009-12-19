@@ -90,10 +90,10 @@ def send(x, destination, use_buffer=False, vanilla=False,
         return
         
     #Input check
-    errmsg = 'Destination id (%s) must be an integer.' %destination
+    errmsg = 'Destination id (%s) must be an integer.' % destination
     assert type(destination) == types.IntType, errmsg
     
-    errmsg = 'Tag %d is reserved by pypar - please use another.' %control_tag
+    errmsg = 'Tag %d is reserved by pypar - please use another.' % control_tag
     assert tag != control_tag, errmsg
 
     #Create metadata about object to be sent
@@ -123,7 +123,9 @@ def receive(source, buffer=None, vanilla=False, tag=default_tag,
 
        Optional parameters:
          buffer: Use specified buffer for received data (faster). Default None.
-         vanilla: Specify to enforce vanilla protocol for any type. Default False
+         vanilla: Specify to enforce vanilla protocol for any type. 
+                  Default False
+
          tag: Only received messages tagged as specified. Default default_tag
          return_status: Return Status object along with result. Default False.
 
@@ -159,7 +161,8 @@ def receive(source, buffer=None, vanilla=False, tag=default_tag,
         errmsg = 'Source id (%s) must be an integer.' %source
         assert type(source) == types.IntType, errmsg
     
-        errmsg = 'Tag %d is reserved by pypar - please use another.' %control_tag
+        errmsg = 'Tag %d is reserved by pypar - please use another.'\
+            % control_tag
         assert tag != control_tag, errmsg
     
     
@@ -169,7 +172,8 @@ def receive(source, buffer=None, vanilla=False, tag=default_tag,
                                                         return_source=True)
             protocol, typecode, size, shape = control_info
         else:  
-            protocol, typecode, size, shape = create_control_info(buffer, vanilla)
+            protocol, typecode, size, shape = create_control_info(buffer, 
+                                                                  vanilla)
     
 
         #Receive payload data     
@@ -377,18 +381,18 @@ def reduce(x, op, root, buffer=None, vanilla=0, bypass=False):
 
     import types    
     from mpiext import size
-    numproc = size()         #Needed to determine buffer size
+    numproc = size()         # Needed to determine buffer size
 
 
-    #Input check
-    errmsg = 'Root id (%s) must be an integer.' %root
+    # Input check
+    errmsg = 'Root id (%s) must be an integer.' % root
     assert type(root) == types.IntType, errmsg
 
-    #Create metadata about object
+    # Create metadata about object
     protocol, typecode, size, shape = create_control_info(x)
 
-
-    #Reduce
+    print protocol, typecode, size, shape, buffer
+    # Reduce
     if protocol == 'array':
         if buffer is None:
             buffer = zeros(size*numproc, typecode)
@@ -399,10 +403,13 @@ def reduce(x, op, root, buffer=None, vanilla=0, bypass=False):
             buffer = reshape(buffer, shape)
       
         reduce_array(x, buffer, op, root)    
+
+        #print 'x:', x
+        #print 'buffer:', buffer
     elif (protocol == 'vanilla' or protocol == 'string'):
-        raise 'Protocol: %s unsupported for reduce' %protocol
+        raise 'Protocol: %s unsupported for reduce' % protocol
     else:
-        raise 'Unknown protocol: %s' %protocol
+        raise 'Unknown protocol: %s' % protocol
       
     return buffer  
 
@@ -421,10 +428,10 @@ def bsend(x, destination, use_buffer=False, vanilla=False,
     import types, string
         
     # Input check.
-    errmsg = 'Destination id (%s) must be an integer.' %destination
+    errmsg = 'Destination id (%s) must be an integer.' % destination
     assert type(destination) == types.IntType, errmsg
     
-    errmsg = 'Tag %d is reserved by pypar - please use another.' %control_tag
+    errmsg = 'Tag %d is reserved by pypar - please use another.' % control_tag
     assert tag != control_tag, errmsg
 
     # Create metadata about object to be sent
@@ -459,7 +466,7 @@ def push_for_alloc(x, vanilla=False, use_buffer=False, bypass=False):
         elif protocol in ['string', 'vanilla']:
             return string_push_for_alloc_and_attach(x)
         else:
-            raise 'Unknown protocol: %s' %protocol
+            raise 'Unknown protocol: %s' % protocol
 
 def alloc_and_attach():
     mpi_alloc_and_attach()
@@ -564,11 +571,11 @@ class Status:
     """    
   
     def __init__(self, status_tuple):
-        self.source = status_tuple[0]  #Id of sender
-        self.tag = status_tuple[1]     #Tag of received message
-        self.error = status_tuple[2]   #MPI Error code
-        self.length = status_tuple[3]  #Number of elements transmitted 
-        self.size = status_tuple[4]    #Size of one element
+        self.source = status_tuple[0]  # Id of sender
+        self.tag = status_tuple[1]     # Tag of received message
+        self.error = status_tuple[2]   # MPI Error code
+        self.length = status_tuple[3]  # Number of elements transmitted 
+        self.size = status_tuple[4]    # Size of one element
 
     def __repr__(self):
         return 'Pypar Status Object:\n  source=%d\n  tag=%d\n  error=%d\n  length=%d\n  size=%d\n' %(self.source, self.tag, self.error, self.length, self.size)
@@ -828,7 +835,6 @@ if error:
         return time.time()
 
 else:
-
     from mpiext import size, rank, barrier, time,\
          get_processor_name,\
          init, initialized, finalize, abort,\
@@ -846,7 +852,13 @@ else:
          MAX, MIN, SUM, PROD, LAND, BAND,\
          LOR, BOR, LXOR, BXOR
 
-    init(sys.argv) #Initialise MPI with cmd line (needed by MPICH/Linux)
+    # Work around bug in OpenMPI: 
+    # https://bugs.launchpad.net/ubuntu/+source/petsc4py/+bug/232036
+    from ctypes import *
+    mpi = CDLL('libmpi.so.0', RTLD_GLOBAL)
+    # End work around
+
+    init(sys.argv) # Initialise MPI with cmd line (needed by MPICH/Linux)
 
     if rank() == 0:     
         print "Pypar (version %s) initialised MPI OK with %d processors" %(__version__, size())

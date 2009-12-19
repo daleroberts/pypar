@@ -830,8 +830,6 @@ if numproc > 1:
     Y = numpy.zeros(N).astype('i')
     for i in range(numproc):
       Y = Y+numpy.array(range(N)).astype('i')*(i+1)    
-    #print X
-    #print Y  
     assert numpy.allclose(X, Y)
     print "Raw reduce using pypar.SUM OK"
         
