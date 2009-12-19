@@ -391,7 +391,7 @@ def reduce(x, op, root, buffer=None, vanilla=0, bypass=False):
     # Create metadata about object
     protocol, typecode, size, shape = create_control_info(x)
 
-    print protocol, typecode, size, shape, buffer
+    #print protocol, typecode, size, shape, buffer
     # Reduce
     if protocol == 'array':
         if buffer is None:
