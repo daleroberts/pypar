@@ -874,30 +874,44 @@ static PyObject *reduce_array(PyObject *self, PyObject *args) {
   MPI_Op mpi_op;
 
   /* process the parameters */
-  if (!PyArg_ParseTuple(args, "OOii", &x, &d, &op, &source))
+  if (!PyArg_ParseTuple(args, "OOii", &x, &d, &op, &source)) {
+    PyErr_SetString(PyExc_RuntimeError, 
+		    "mpiext.c (reduce_array): could not parse input");
     return NULL;
+  }
    
   /* Input check and determination of MPI type */          
   mpi_type = type_map(x, &count);
-  if (!mpi_type) return NULL;  
+  if (!mpi_type) {
+    PyErr_SetString(PyExc_RuntimeError, 
+		    "mpiext.c (reduce_array): could not determine mpi_type");
+    return NULL;  
+  }
+
   if (mpi_type != type_map(d, &count1)) {
-    printf ("Input array and buffer must be of the same type\n");
-    return Py_BuildValue("i", -666);    
+    PyErr_SetString(PyExc_RuntimeError, 
+		    "mpiext.c (reduce_array): Input array and buffer must be of the same type");
+    return NULL;  
   }
 
   if (count != count1) {
-    printf ("Input array and buffer must have same length\n");
-    return Py_BuildValue("i", -666);    
+    PyErr_SetString(PyExc_RuntimeError, 
+		    "mpiext.c (reduce_array): Input array and buffer must have same length");
+    return NULL;  
   }
     
   /* Input check and determination of MPI op */ 
-  /*printf("op: %d\n", op);         */
   mpi_op = op_map(op);
-  if (!mpi_op) return NULL;  
+  if (!mpi_op) {
+    PyErr_SetString(PyExc_RuntimeError, 
+		    "mpiext.c (reduce_array): could not determine mpi_op");
+    return NULL;  
+  }
    
   if (op == MAXLOC || op == MINLOC) {
-    /*not implemented*/
-    return Py_BuildValue("i", -666);
+    PyErr_SetString(PyExc_RuntimeError, 
+		    "mpiext.c (reduce_array): MAXLOC and MINLOC are not implemented");
+    return NULL;  
   }
   else {
     /* call the MPI routine */

@@ -401,10 +401,8 @@ def reduce(x, op, root, buffer=None, vanilla=0, bypass=False):
             shape[0] *= numproc
             buffer = reshape(buffer, shape)
       
-        err=reduce_array(x, buffer, op, root)    
-        if err != 0:
-            msg = 'Reduce operation failed'
-            raise Exception(msg)
+        reduce_array(x, buffer, op, root)    
+
 
     elif (protocol == 'vanilla' or protocol == 'string'):
         raise 'Protocol: %s unsupported for reduce' % protocol
