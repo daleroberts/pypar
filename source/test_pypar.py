@@ -812,7 +812,6 @@ if numproc > 1:
       assert numpy.allclose(testArray, X[(i * M): ((i+1)*M), :])
     assert numpy.allclose(X, Y)      
     print "Gather communication of 2D numeric complex arrays OK"
-    
   
   ########################################################
   # Test reduce
@@ -822,8 +821,14 @@ if numproc > 1:
   # Create one (different) array on each processor
   #    
   testArray = numpy.array(range(N)).astype('i') * (myid+1)
-  #print testArray
+  print myid, testArray, testArray.dtype.char
   X = numpy.zeros(N).astype('i') # Buffer for results
+
+  print 'Type of A is ', testArray.dtype, testArray.dtype.char
+  print 'Type of X is ', X.dtype, X.dtype.char
+
+
+
 
   raw_reduce(testArray, X, pypar.SUM, 0)
   if myid == 0:

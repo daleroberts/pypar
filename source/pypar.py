@@ -89,24 +89,24 @@ def send(x, destination, use_buffer=False, vanilla=False,
         send_array(x, destination, tag)
         return
         
-    #Input check
+    # Input check
     errmsg = 'Destination id (%s) must be an integer.' % destination
     assert type(destination) == types.IntType, errmsg
     
     errmsg = 'Tag %d is reserved by pypar - please use another.' % control_tag
     assert tag != control_tag, errmsg
 
-    #Create metadata about object to be sent
+    # Create metadata about object to be sent
     control_info, x = create_control_info(x, vanilla, return_object=True)
     protocol = control_info[0]
 
 
-    #Possibly transmit control data
+    # Possibly transmit control data
     if use_buffer is False:
         send_control_info(control_info, destination)   
 
       
-    #Transmit payload data    
+    # Transmit payload data    
     if protocol == 'array':
         send_array(x, destination, tag)    
     elif protocol in ['string', 'vanilla']:
@@ -150,14 +150,14 @@ def receive(source, buffer=None, vanilla=False, tag=default_tag,
     """
 
     if bypass:
-        #errmsg = 'bypass mode must be used with specified buffer'
-        #assert buffer is not None, msg
+        # errmsg = 'bypass mode must be used with specified buffer'
+        # assert buffer is not None, msg
         stat = receive_array(buffer, source, tag)        
     else:    
     
         import types 
     
-        #Input check
+        # Input check
         errmsg = 'Source id (%s) must be an integer.' %source
         assert type(source) == types.IntType, errmsg
     
@@ -166,7 +166,7 @@ def receive(source, buffer=None, vanilla=False, tag=default_tag,
         assert tag != control_tag, errmsg
     
     
-        #Either receive or create metadata about object to receive
+        # Either receive or create metadata about object to receive
         if buffer is None:
             control_info, source = receive_control_info(source,
                                                         return_source=True)
@@ -176,7 +176,7 @@ def receive(source, buffer=None, vanilla=False, tag=default_tag,
                                                                   vanilla)
     
 
-        #Receive payload data     
+        # Receive payload data     
         if protocol == 'array':
             if buffer is None:
                 buffer = zeros(size,typecode)
@@ -238,16 +238,16 @@ def broadcast(buffer, root, vanilla=False, bypass=False):
 
     import types
     
-    #Input check
+    # Input check
     errmsg = 'Root id (%s) must be an integer.' %root
     assert type(root) == types.IntType, errmsg
 
 
-    #Create metadata about object to be sent
+    # Create metadata about object to be sent
     protocol = create_control_info(buffer, vanilla)[0]
 
 
-    #Broadcast
+    # Broadcast
     if protocol == 'array':
         broadcast_array(buffer, root)    
     elif protocol == 'string':
@@ -279,17 +279,17 @@ def scatter(x, root, buffer=None, vanilla=False):
 
     import types
     from mpiext import size
-    numproc = size()         #Needed to determine buffer size    
+    numproc = size()         # Needed to determine buffer size    
     
-    #Input check
+    # Input check
     errmsg = 'Root id (%s) must be an integer.' %root
     assert type(root) == types.IntType, errmsg
 
     
-    #Create metadata about object to be sent
+    # Create metadata about object to be sent
     protocol, typecode, size, shape = create_control_info(x)
 
-    #Scatter
+    # Scatter
     if protocol == 'array':
         if buffer is None:
             # Modify shape along axis=0 to match size
@@ -329,14 +329,14 @@ def gather(x, root, buffer=None, vanilla=0):
     from mpiext import size
     numproc = size()         #Needed to determine buffer size
 
-    #Input check
+    # Input check
     errmsg = 'Root id (%s) must be an integer.' %root
     assert type(root) == types.IntType, errmsg
 
-    #Create metadata about object to be gathered
+    # Create metadata about object to be gathered
     protocol, typecode, size, shape = create_control_info(x)
 
-    #Gather
+    # Gather
     if protocol == 'array':
         if buffer is None:
             buffer = zeros(size*numproc, typecode)
@@ -391,7 +391,6 @@ def reduce(x, op, root, buffer=None, vanilla=0, bypass=False):
     # Create metadata about object
     protocol, typecode, size, shape = create_control_info(x)
 
-    #print protocol, typecode, size, shape, buffer
     # Reduce
     if protocol == 'array':
         if buffer is None:
@@ -402,10 +401,11 @@ def reduce(x, op, root, buffer=None, vanilla=0, bypass=False):
             shape[0] *= numproc
             buffer = reshape(buffer, shape)
       
-        reduce_array(x, buffer, op, root)    
+        err=reduce_array(x, buffer, op, root)    
+        if err != 0:
+            msg = 'Reduce operation failed'
+            raise Exception(msg)
 
-        #print 'x:', x
-        #print 'buffer:', buffer
     elif (protocol == 'vanilla' or protocol == 'string'):
         raise 'Protocol: %s unsupported for reduce' % protocol
     else:
@@ -616,19 +616,19 @@ def create_control_info(x, vanilla=0, return_object=False):
 
     import types
 
-    #Default values
+    # Default values
     protocol = 'vanilla'
     typecode = ' '
     size = 0
     shape = ()
 
-    #Determine protocol in case 
+    # Determine protocol in case 
     if not vanilla:
         if type(x) == types.StringType:
             protocol = 'string'
             typecode = 'c'
             size = len(x)
-        elif type(x).__name__ == 'ndarray': #numpy isn't imported yet
+        elif type(x).__name__ == 'ndarray': # numpy isn't imported yet
             try:
                 import numpy
             except:
@@ -648,13 +648,13 @@ def create_control_info(x, vanilla=0, return_object=False):
                     print "Reverting to vanilla mode."
                     protocol = 'vanilla'
 
-    #Pickle general structures using the vanilla protocol                
+    # Pickle general structures using the vanilla protocol                
     if protocol == 'vanilla':                    
         from cPickle import dumps
         x = dumps(x, protocol=2)
         size = len(x) # Let count be length of pickled object
 
-    #Return    
+    # Return    
     if return_object:
         return [protocol, typecode, size, shape], x
     else:  
@@ -669,7 +669,7 @@ def send_control_info(control_info, destination):
     """
     import string
 
-    #Convert to strings
+    # Convert to strings
     control_info = [str(c) for c in control_info]
   
     control_msg = string.join(control_info,control_sep)
@@ -696,16 +696,16 @@ def receive_control_info(source, return_source=False):
     msg = ' '*control_data_max_size
 
     stat = receive_string(msg, source, control_tag)
-    #No need to create status object here - it is reserved
-    #for payload communications only 
+    # No need to create status object here - it is reserved
+    # for payload communications only 
 
-    msg = msg[:stat[3]] #Trim buffer to actual received length (needed?) 
+    msg = msg[:stat[3]] # Trim buffer to actual received length (needed?) 
 
     control_info = msg.split(control_sep)
 
     assert len(control_info) == 4, 'len(control_info) = %d' %len(control_info)
-    control_info[2] = eval(control_info[2]) #Convert back to int
-    control_info[3] = eval(control_info[3]) #Convert back to tuple
+    control_info[2] = eval(control_info[2]) # Convert back to int
+    control_info[3] = eval(control_info[3]) # Convert back to tuple
 
     if return_source:
         return control_info, int(stat[0])
@@ -751,10 +751,10 @@ else:
     # Attempting to check this automatically may case some systems to hang.
 
     if sys.platform in ['linux2', 'sunos5', 'win32', 'darwin']:
-        #Linux (LAM,MPICH) or Sun (MPICH)
+        # Linux (LAM,MPICH) or Sun (MPICH)
         error = 0  #Sequential execution of MPI is allowed    
     else:
-        #Platform: Alpha 'osf1V5'  
+        # Platform: Alpha 'osf1V5'  
         cmdstring = '"import mpiext, sys; mpiext.init(sys.argv); mpiext.finalize()"'
         #s = 'cd %s; python -c %s' %(dirname, cmdstring)
         s = 'python -c %s >/dev/null 2>/dev/null' %cmdstring  

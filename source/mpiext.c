@@ -900,9 +900,9 @@ static PyObject *reduce_array(PyObject *self, PyObject *args) {
     return Py_BuildValue("i", -666);
   }
   else {
-  /* call the MPI routine */
-  error =  MPI_Reduce(x->data, d->data, count, mpi_type, mpi_op, source, \
-         MPI_COMM_WORLD);
+    /* call the MPI routine */
+    error =  MPI_Reduce(x->data, d->data, count, mpi_type, mpi_op, source, \
+			MPI_COMM_WORLD);
   }
          
   if (error != 0) {
@@ -912,8 +912,8 @@ static PyObject *reduce_array(PyObject *self, PyObject *args) {
     return NULL;
   }  
   
-	Py_INCREF(Py_None);
-	return (Py_None);
+  Py_INCREF(Py_None);
+  return (Py_None);
 }
 
 /*********************************************************/
