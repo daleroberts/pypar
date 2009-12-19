@@ -869,7 +869,7 @@ static PyObject *reduce_array(PyObject *self, PyObject *args) {
   PyArrayObject *x;
   PyArrayObject *d;
   int source, op, error, count, count1, myid;
-  MPI_Datatype mpi_type;
+  MPI_Datatype mpi_type, buffer_type;
   /*MPI_Status status;*/
   MPI_Op mpi_op;
 
@@ -888,9 +888,11 @@ static PyObject *reduce_array(PyObject *self, PyObject *args) {
     return NULL;  
   }
 
-  if (mpi_type != type_map(d, &count1)) {
-    PyErr_SetString(PyExc_RuntimeError, 
-		    "mpiext.c (reduce_array): Input array and buffer must be of the same type");
+  buffer_type = type_map(d, &count1);
+  if (mpi_type != buffer_type) {
+    sprintf(errmsg, "mpiext.c (reduce_array): Input array and buffer must be of the same type.");
+    PyErr_SetString(PyExc_RuntimeError, errmsg);
+		    
     return NULL;  
   }
 

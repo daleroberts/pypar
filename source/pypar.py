@@ -372,8 +372,6 @@ def reduce(x, op, root, buffer=None, vanilla=0, bypass=False):
        The buffer must be specified explicitly in this case.
     """
 
-
-
     if bypass:
         reduce_array(x, buffer, op, root)
         return
@@ -401,6 +399,11 @@ def reduce(x, op, root, buffer=None, vanilla=0, bypass=False):
             shape[0] *= numproc
             buffer = reshape(buffer, shape)
       
+
+        msg = 'Data array and buffer must have same type '
+        msg = 'in reduce. I got types "%s" and "%s"' % (x.dtype.char,
+                                                        buffer.dtype.char)
+        assert x.dtype.char == buffer.dtype.char, msg    
         reduce_array(x, buffer, op, root)    
 
 
