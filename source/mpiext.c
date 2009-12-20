@@ -1,6 +1,6 @@
 /************************************************************************/
 /* PyPAR - Parallel Python using MPI                 	                */
-/* Copyright (C) 2001, 2002, 2003 Ole M. Nielsen                        */
+/* Copyright (C) 2001 - 2009 Ole Nielsen                                */
 /*                                                                      */
 /* See enclosed README file for details of installation and use.   	*/
 /*                                                                 	*/   
@@ -33,7 +33,7 @@
 #include "numpy/arrayobject.h"
 
 
-/* to handle MPI constants export (shamelessly stolen from _cursesmodule.c)*/
+/* Handle MPI constants export (shamelessly stolen from _cursesmodule.c)*/
 #define SetDictInt(string,ch) \
         PyDict_SetItemString(ModDict, string, PyInt_FromLong((long) (ch)));
 
@@ -55,15 +55,13 @@
 
 static char errmsg[132];  /*Used to cretae exception messages*/
 
-/*
- * MPI_Bsend() related variables.
- */
+/* MPI_Bsend() related variables. */
 static void *pt_buf;	/* Pointer to allocated buffer. */
 static int buf_size;	/* Size of buffer to allocate. */ 
 
 int length(PyArrayObject *x) {  
-  /*Compute the total length of contiguous array*/
-  /*Necessary for communicating multi dimensional arrays */
+  /* Compute the total length of contiguous array */
+  /* Necessary for communicating multi dimensional arrays */
   
   int i, length;
   
@@ -103,7 +101,6 @@ MPI_Datatype type_map(PyArrayObject *x, int *count) {
 
   *count = length(x);
   
-  //py_type = x -> descr -> type_num;     
   py_type = PyArray_TYPE(x);
   if (py_type == NPY_DOUBLE) 
     mpi_type = MPI_DOUBLE;
@@ -192,7 +189,7 @@ static PyObject *send_string(PyObject *self, PyObject *args) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
     sprintf(errmsg, "Proc %d: MPI_Send failed with error code %d\n", 
 	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg); /*raise ValueError, errmsg */
+    PyErr_SetString(PyExc_RuntimeError, errmsg);
     return NULL;
   }  
       
@@ -226,10 +223,10 @@ static PyObject *receive_string(PyObject *self, PyObject *args) {
   }  
      
   MPI_Get_count(&status, MPI_CHAR, &st_length); 
-  /*status.st_length is not available in all MPI implementations
-  //Alternative is: MPI_Get_elements(MPI_Status *, MPI_Datatype, int *); */
+  /* status.st_length is not available in all MPI implementations
+  // Alternative is: MPI_Get_elements(MPI_Status *, MPI_Datatype, int *); */
 
-  /*Still include error msg in status in case exception is caught. */
+  /* Still include error msg in status in case exception is caught. */
   return Py_BuildValue("(iiiii)", status.MPI_SOURCE, status.MPI_TAG,
   status.MPI_ERROR, st_length, sizeof(char));  
 }
@@ -251,7 +248,8 @@ static PyObject *broadcast_string(PyObject *self, PyObject *args) {
   error = MPI_Bcast(s, length, MPI_CHAR, source, MPI_COMM_WORLD);
   if (error != 0) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Bcast failed with error code %d\n", myid, error);
+    sprintf(errmsg, "Proc %d: MPI_Bcast failed with error code %d\n", 
+	    myid, error);
     PyErr_SetString(PyExc_RuntimeError, errmsg);   
     return NULL;
   }  
@@ -323,21 +321,18 @@ static PyObject *gather_string(PyObject *self, PyObject *args) {
   return (Py_None);
 }
 
-/*
- * 'bsend_string'
- *
- * Sends a string of characters using MPI_Bsend().     
- *
- * Return value: PyNone.
- *
- */
 
+/**********************************************************/
+/* bsend_string                                           */
+/* Send a string of characters using MPI_Bsend().         */
+/*                                                        */
+/* Return value: PyNone.                                  */
+/**********************************************************/
 static PyObject *bsend_string(PyObject *self, PyObject *args) {
   char *s;
   int destination, tag, length;
   int error, myid;
 
-  //error = 0, myid = -1;
 
   /* Process the parameters. */
   if (!PyArg_ParseTuple(args, "s#ii", &s, &length, &destination, &tag))
@@ -349,8 +344,8 @@ static PyObject *bsend_string(PyObject *self, PyObject *args) {
 
   if (error != 0) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: bsend_string: MPI_Bsend failed with error \
-			code %d\n", myid, error);
+    sprintf(errmsg, "Proc %d: MPI_Bsend failed with error code %d\n", 
+	    myid, error);
     PyErr_SetString(PyExc_RuntimeError, errmsg);
     return NULL;
   }  
@@ -359,17 +354,13 @@ static PyObject *bsend_string(PyObject *self, PyObject *args) {
   return (Py_None);
 }
 
-/*
- * 'bsend_array'
- *
- * This function is used to send a Numpy array using MPI_Bsend().
- *
- * Accepted types for array: float, double, int, or long.
- *
- * Return value: 'PyNone'.
- *
- */
 
+/**********************************************************/
+/* bsend_array                                            */
+/* Send a Numpy array using MPI_Bsend().                  */
+/* Accepted types for array: float, double, int, or long. */
+/* Return value: PyNone.                                  */
+/**********************************************************/
 static PyObject *bsend_array(PyObject *self, PyObject *args) { 
   PyObject *input;
   PyArrayObject *x;
@@ -386,27 +377,24 @@ static PyObject *bsend_array(PyObject *self, PyObject *args) {
     return NULL;
 
   /* Make Numpy array from general sequence type (no cost if already Numpy). */
-  x = (PyArrayObject *) PyArray_ContiguousFromObject(input, PyArray_NOTYPE, 0, 0);
+  x = (PyArrayObject *)
+    PyArray_ContiguousFromObject(input, NPY_NOTYPE, 0, 0);
 
   /* Input check and determination of MPI type */          
   mpi_type = type_map(x, &count);
   if (!mpi_type)
     return NULL;
 
-  /* call the MPI routine */
-  
-  error = MPI_Bsend(x->data, count, mpi_type, destination, tag, \
+  /* Call the MPI routine */
+  error = MPI_Bsend(x->data, count, mpi_type, destination, tag,
           MPI_COMM_WORLD);
-
-  /*printf("bsend_array: MPI_Bsend: AFTER rank %d send to %d, count %d \n", \
-            myid, destination, length); */
 
   Py_DECREF(x); 	   
   
   if (error != 0) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: bsend_array: MPI_Bsend failed with error code \
-            %d\n", myid, error);
+    sprintf(errmsg, "Proc %d: MPI_Bsend failed with error code %d\n", 
+	    myid, error);
     PyErr_SetString(PyExc_RuntimeError, errmsg);   
     return NULL;
   }  
@@ -414,6 +402,312 @@ static PyObject *bsend_array(PyObject *self, PyObject *args) {
   Py_INCREF(Py_None);
   return (Py_None);
 }
+
+
+
+
+/**********************************************************/
+/* send_array                                             */
+/* Send Numeric array of type float, double, int, or long */
+/*                                                        */
+/**********************************************************/
+static PyObject *send_array(PyObject *self, PyObject *args) {
+  PyObject *input;
+  PyArrayObject *x;
+  int destination, tag, error, count, myid;
+  MPI_Datatype mpi_type;
+  
+  /* process the parameters */
+  if (!PyArg_ParseTuple(args, "Oii", &input, &destination, &tag))
+    return NULL;
+    
+  /* Make Numpy array from general sequence type (no cost if already Numpy). */
+  x = (PyArrayObject *)
+    PyArray_ContiguousFromObject(input, NPY_NOTYPE, 0, 0);
+    
+  /* Input check and determination of MPI type */          
+  mpi_type = type_map(x, &count);
+  if (!mpi_type) return NULL;
+    
+  /* call the MPI routine */
+  error = MPI_Send(x->data, count, mpi_type, destination, tag,
+		   MPI_COMM_WORLD);
+  Py_DECREF(x); 	   
+  
+  if (error != 0) {
+    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
+    sprintf(errmsg, "Proc %d: MPI_Send failed with error code %d\n", 
+	    myid, error);
+    PyErr_SetString(PyExc_RuntimeError, errmsg);   
+    return NULL;
+  }  
+   
+  Py_INCREF(Py_None);
+  return (Py_None);
+}
+
+
+
+/*************************************************************/
+/* receive_array                                             */
+/* Receive Numeric array of type float, double, int, or long */
+/*                                                           */
+/*************************************************************/
+static PyObject *receive_array(PyObject *self, PyObject *args) {
+  PyArrayObject *x;
+  int source, tag, error, st_length, size, count, myid;
+  MPI_Datatype mpi_type;
+  MPI_Status status;
+
+    
+  if (!PyArg_ParseTuple(args, "Oii", &x, &source, &tag))
+    return NULL;    
+    
+  /* Input check and determination of MPI type */          
+  mpi_type = type_map(x, &count);
+  if (!mpi_type) return NULL;  
+      
+  /* call the MPI routine */
+  error =  MPI_Recv(x->data, count, mpi_type, source, tag,
+		    MPI_COMM_WORLD, &status);
+	 
+  /* Do not DECREF x as it must be returned to Python */
+  	 
+  if (error != 0) {
+    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
+    sprintf(errmsg, "Proc %d: MPI_Recv failed with error code %d\n", 
+	    myid, error);
+    PyErr_SetString(PyExc_RuntimeError, errmsg);   
+    return NULL;
+  }  
+   
+	 
+  MPI_Get_count(&status, mpi_type, &st_length); 
+  /* status.st_length is not available in all MPI implementations */
+  /* Alternative is: MPI_Get_elements(MPI_Status *, MPI_Datatype, int *); */
+	 
+      
+  /* FIXME: This might not be watertight on all platforms */
+  /* Need C equivalent to itemsize().*/
+  if (mpi_type == MPI_DOUBLE) {
+    size = sizeof(double);  /*8 */
+  } else if (mpi_type == MPI_LONG) {
+    size = sizeof(long); /*8? */
+  } else if (mpi_type == MPI_FLOAT) {
+    size = sizeof(float);
+  } else if (mpi_type == MPI_INT) {    
+    size = sizeof(int);  
+  } else {
+    size = 4;  
+  }
+    
+  return Py_BuildValue("(iiiii)", status.MPI_SOURCE, status.MPI_TAG,
+  status.MPI_ERROR, st_length, size);  
+}
+
+
+/*************************************************************/
+/* broadcast_array                                               */
+/* Broadcast Num.  array of type float, double, int, or long */
+/*                                                           */
+/*************************************************************/
+static PyObject *broadcast_array(PyObject *self, PyObject *args) {
+  PyArrayObject *x;
+  int source, error, count, myid;
+  MPI_Datatype mpi_type;
+
+  /* process the parameters */
+  if (!PyArg_ParseTuple(args, "Oi", &x, &source))
+    return NULL;
+
+  /* Input check and determination of MPI type */          
+  mpi_type = type_map(x, &count);
+  if (!mpi_type) return NULL;  
+      
+  /* call the MPI routine */
+  error =  MPI_Bcast(x->data, count, mpi_type, source, \
+		     MPI_COMM_WORLD);
+	 
+	 
+  if (error != 0) {
+    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
+    sprintf(errmsg, "Proc %d: MPI_Bcast failed with error code %d\n", 
+	    myid, error);
+    PyErr_SetString(PyExc_RuntimeError, errmsg);   
+    return NULL;
+  }  
+	 
+  Py_INCREF(Py_None);
+  return (Py_None);
+}
+
+/*************************************************************/
+/* scatter_array                                             */
+/* Scatter Num.    array of type float, double, int, or long */
+/*                                                           */
+/*************************************************************/
+static PyObject *scatter_array(PyObject *self, PyObject *args) {
+  PyArrayObject *x;
+  PyArrayObject *d;
+  int source, error, count, myid, numprocs;
+  MPI_Datatype mpi_type;
+
+  /* process the parameters */
+  if (!PyArg_ParseTuple(args, "OOi", &x, &d, &source))
+    return NULL;
+
+  /* Input check and determination of MPI type */          
+  mpi_type = type_map(x, &count);
+  if (!mpi_type) return NULL;  
+   
+  error = MPI_Comm_size(MPI_COMM_WORLD,&numprocs);    
+  count = count/numprocs;  
+  
+  /* call the MPI routine */
+  error = MPI_Scatter(x->data, count, mpi_type, d->data, count, 
+		      mpi_type, source,	MPI_COMM_WORLD);
+	 
+  if (error != 0) {
+    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
+    sprintf(errmsg, "Proc %d: MPI_Scatter failed with error code %d\n", 
+	    myid, error);
+    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    return NULL;
+  }  
+      
+  Py_INCREF(Py_None);
+  return (Py_None);
+}
+
+
+/*************************************************************/
+/* gather_array                                              */
+/* Gather Num.     array of type float, double, int, or long */
+/*                                                           */
+/*************************************************************/
+static PyObject *gather_array(PyObject *self, PyObject *args) {
+  PyArrayObject *x;
+  PyArrayObject *d;
+  int source, error, count, myid;
+  MPI_Datatype mpi_type;
+
+  /* process the parameters */
+  if (!PyArg_ParseTuple(args, "OOi", &x, &d, &source))
+    return NULL;
+
+  /* Input check and determination of MPI type */          
+  mpi_type = type_map(x, &count);
+  if (!mpi_type) return NULL;  
+      
+  /* call the MPI routine */
+  error =  MPI_Gather(x->data, count, mpi_type, d->data, count, 
+		      mpi_type, source,	MPI_COMM_WORLD);
+
+  if (error != 0) {
+    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
+    sprintf(errmsg, "Proc %d: MPI_Gather failed with error code %d\n", 
+	    myid, error);
+    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    return NULL;
+  }  
+  
+  Py_INCREF(Py_None);
+  return (Py_None);
+}
+
+
+
+/*************************************************************/
+/* reduce_array                                              */
+/* Reduce Num.     array of type float, double, int, or long */
+/*                                                           */
+/*************************************************************/
+static PyObject *reduce_array(PyObject *self, PyObject *args) {
+  PyArrayObject *x;
+  PyArrayObject *d;
+  int source, op, error, count, count1, myid;
+  MPI_Datatype mpi_type, buffer_type;
+  MPI_Op mpi_op;
+
+  /* process the parameters */
+  if (!PyArg_ParseTuple(args, "OOii", &x, &d, &op, &source)) {
+    PyErr_SetString(PyExc_RuntimeError, 
+		    "mpiext.c (reduce_array): could not parse input");
+    return NULL;
+  }
+   
+  /* Input check and determination of MPI type */          
+  mpi_type = type_map(x, &count);
+  if (!mpi_type) {
+    PyErr_SetString(PyExc_RuntimeError, 
+		    "mpiext.c (reduce_array): could not determine mpi_type");
+    return NULL;  
+  }
+
+  /* This error is caught at the pypar level - so we won't end up here
+     unless mpiext is being used independently */
+  buffer_type = type_map(d, &count1);
+  if (mpi_type != buffer_type) {
+    sprintf(errmsg, "mpiext.c (reduce_array): Input array and buffer must be of the same type.");
+    PyErr_SetString(PyExc_RuntimeError, errmsg);
+		    
+    return NULL;  
+  }
+
+  if (count != count1) {
+    PyErr_SetString(PyExc_RuntimeError, 
+		    "mpiext.c (reduce_array): Input array and buffer must have same length");
+    return NULL;  
+  }
+    
+  /* Input check and determination of MPI op */ 
+  mpi_op = op_map(op);
+  if (!mpi_op) {
+    PyErr_SetString(PyExc_RuntimeError, 
+		    "mpiext.c (reduce_array): could not determine mpi_op");
+    return NULL;  
+  }
+   
+  if (op == MAXLOC || op == MINLOC) {
+    PyErr_SetString(PyExc_RuntimeError, 
+		    "mpiext.c (reduce_array): MAXLOC and MINLOC are not implemented");
+    return NULL;  
+  }
+  else {
+    /* call the MPI routine */
+    error =  MPI_Reduce(x->data, d->data, count, mpi_type, mpi_op, source, \
+			MPI_COMM_WORLD);
+  }
+         
+  if (error != 0) {
+    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
+    sprintf(errmsg, "Proc %d: MPI_Reduce failed with error code %d\n", 
+	    myid, error);
+    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    return NULL;
+  }  
+  
+  Py_INCREF(Py_None);
+  return (Py_None);
+}
+
+
+
+
+
+
+
+/**********************************************************/
+/* CONTRIBUTED FUNCTIONS FROM CMAKASSIKIS:                */
+/* push_for_alloc functions                               */ 
+/* mpi_alloc_and_attach                                   */
+/* mpi_detach_and_dealloc                                 */ 
+/* mpi_attach                                             */
+/* mpi_detach                                             */
+/* mpi_alloc                                              */
+/* mpi_dealloc                                            */ 
+/**********************************************************/
+
 
 /*
  * 'push_for_alloc' functions are used to increase the current size in bytes of
@@ -430,7 +724,8 @@ static PyObject *bsend_array(PyObject *self, PyObject *args) {
  * Return value: 'buf_size'.
  */
 
-static PyObject *string_push_for_alloc_and_attach(PyObject *self, PyObject *args) {
+static PyObject *string_push_for_alloc_and_attach(PyObject *self, 
+						  PyObject *args) {
   char *s;
   int length;
 
@@ -451,7 +746,8 @@ static PyObject *string_push_for_alloc_and_attach(PyObject *self, PyObject *args
  * Return value: 'buf_size'.
  */
 
-static PyObject *array_push_for_alloc_and_attach(PyObject *self, PyObject *args) {
+static PyObject *array_push_for_alloc_and_attach(PyObject *self, 
+						 PyObject *args) {
   PyArrayObject *array;	
   int count;				
   int nbytes;				
@@ -480,12 +776,15 @@ static PyObject *array_push_for_alloc_and_attach(PyObject *self, PyObject *args)
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
     sprintf(errmsg, "Proc %d: array_push_for_alloc_and_attach: \
 	        MPI_Type_size failed with error code %d\n", myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg); // Raise ValueError, errmsg
+    PyErr_SetString(PyExc_RuntimeError, errmsg);
     return NULL;
   }  
 
   return Py_BuildValue("i", buf_size);
 }
+
+
+
 
 /*
  * 'mpi_alloc_and_attach'
@@ -510,7 +809,8 @@ static PyObject *mpi_alloc_and_attach(PyObject *self, PyObject *args) {
   pt_buf = (void *) malloc (buf_size);
 
   if (pt_buf == NULL) {
-    PyErr_SetString(PyExc_RuntimeError, "mpi_alloc_and_attach: Not enough memory to allocate bsend buffer");
+    PyErr_SetString(PyExc_RuntimeError, 
+		    "mpi_alloc_and_attach: Not enough memory to allocate bsend buffer");
     return NULL;
   }
 
@@ -521,7 +821,7 @@ static PyObject *mpi_alloc_and_attach(PyObject *self, PyObject *args) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
     sprintf(errmsg, "Proc %d: mpi_alloc_and_attach: MPI_Buffer_attach: \
 	                 failed with error code %d\n", myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg); // Raise ValueError, errmsg
+    PyErr_SetString(PyExc_RuntimeError, errmsg);
     return NULL;
   }  
 
@@ -566,8 +866,8 @@ static PyObject *mpi_attach(PyObject *self, PyObject *args) {
 
   if (error != 0) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: mpi_attach: MPI_Buffer_attach: failed with \
-                     error code %d\n", myid, error);
+    sprintf(errmsg, "Proc %d: MPI_Buffer_attach: failed with error code %d\n", 
+	    myid, error);
     PyErr_SetString(PyExc_RuntimeError, errmsg); 
     return NULL;
   }  
@@ -644,312 +944,13 @@ static PyObject *mpi_dealloc(PyObject *self, PyObject *args) {
   return (Py_None);
 }
 
-/**********************************************************/
-/* send_array                                             */
-/* Send Numeric array of type float, double, int, or long */
-/*                                                        */
-/**********************************************************/
-static PyObject *send_array(PyObject *self, PyObject *args) {
-  PyObject *input;
-  PyArrayObject *x;
-  int destination, tag, error, count, myid;
-  MPI_Datatype mpi_type;
-  
-  /* process the parameters */
-  if (!PyArg_ParseTuple(args, "Oii", &input, &destination, &tag))
-    return NULL;
-    
-  /*if (!PyArg_ParseTuple(args, "Oii", &x, &destination, &tag))*/
-  /* return NULL;     */
-    
-  /* Make Numeric array from general sequence type (no cost if already Numeric)*/    
-  x = (PyArrayObject *)
-    PyArray_ContiguousFromObject(input, NPY_NOTYPE, 0, 0);
-    
-  /* Input check and determination of MPI type */          
-  mpi_type = type_map(x, &count);
-  if (!mpi_type) return NULL;
-    
-  /* call the MPI routine */
-  error = MPI_Send(x->data, count, mpi_type, destination, tag,\
-		   MPI_COMM_WORLD);
-  Py_DECREF(x); 	   
-  
-  if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Send failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);   
-    return NULL;
-  }  
-   
-  Py_INCREF(Py_None);
-  return (Py_None);
-}
 
 
-
-
-/*************************************************************/
-/* receive_array                                             */
-/* Receive Numeric array of type float, double, int, or long */
-/*                                                           */
-/*************************************************************/
-static PyObject *receive_array(PyObject *self, PyObject *args) {
-  /*PyObject *input;*/
-  PyArrayObject *x;
-  int source, tag, error, st_length, size, count, myid;
-  MPI_Datatype mpi_type;
-  MPI_Status status;
-
-  /* process the parameters */
-  /*if (!PyArg_ParseTuple(args, "Oii", &input, &source, &tag))*/
-  /*  return NULL;*/
-    
-  if (!PyArg_ParseTuple(args, "Oii", &x, &source, &tag))
-    return NULL;    
-    
-  /* Make Numeric array from general sequence type (no cost if already Numeric)*/    
-  /*x = (PyArrayObject *) */
-  /*  PyArray_ContiguousFromObject(input, PyArray_NOTYPE, 0, 0);*/
-    
-  /* Input check and determination of MPI type */          
-  mpi_type = type_map(x, &count);
-  if (!mpi_type) return NULL;  
-      
-  /* call the MPI routine */
-  error =  MPI_Recv(x->data, count, mpi_type, source, tag, \
-		    MPI_COMM_WORLD, &status);
-	 
-  /* Do not DECREF x as it must be returned to Python*/
-  	 
-  if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Recv failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);   
-    return NULL;
-  }  
-   
-	 
-  MPI_Get_count(&status, mpi_type, &st_length); 
-  /* status.st_length is not available in all MPI implementations*/
-  /*Alternative is: MPI_Get_elements(MPI_Status *, MPI_Datatype, int *);*/
-	 
-      
-  /*FIXME: This might not be watertight on all platforms */
-  /* Need C equivalent to itemsize().*/
-  if (mpi_type == MPI_DOUBLE) {
-    size = sizeof(double);  /*8 */
-  } else if (mpi_type == MPI_LONG) {
-    size = sizeof(long); /*8? */
-  } else if (mpi_type == MPI_FLOAT) {
-    size = sizeof(float);
-  } else if (mpi_type == MPI_INT) {    
-    size = sizeof(int);  
-  } else {
-    size = 4;  
-  }
-    
-  return Py_BuildValue("(iiiii)", status.MPI_SOURCE, status.MPI_TAG,
-  status.MPI_ERROR, st_length, size);  
-}
-
-
-/*************************************************************/
-/* broadcast_array                                               */
-/* Broadcast Num.  array of type float, double, int, or long */
-/*                                                           */
-/*************************************************************/
-static PyObject *broadcast_array(PyObject *self, PyObject *args) {
-  PyArrayObject *x;
-  int source, error, count, myid;
-  MPI_Datatype mpi_type;
-  /*MPI_Status status;*/
-
-  /* process the parameters */
-  if (!PyArg_ParseTuple(args, "Oi", &x, &source))
-    return NULL;
-
-  /* Input check and determination of MPI type */          
-  mpi_type = type_map(x, &count);
-  if (!mpi_type) return NULL;  
-      
-  /* call the MPI routine */
-  error =  MPI_Bcast(x->data, count, mpi_type, source, \
-		     MPI_COMM_WORLD);
-	 
-	 
-  if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Bcast failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);   
-    return NULL;
-  }  
-	 
-  Py_INCREF(Py_None);
-  return (Py_None);
-}
-
-/*************************************************************/
-/* scatter_array                                             */
-/* Scatter Num.    array of type float, double, int, or long */
-/*                                                           */
-/*************************************************************/
-static PyObject *scatter_array(PyObject *self, PyObject *args) {
-  PyArrayObject *x;
-  PyArrayObject *d;
-  int source, error, count, myid, numprocs;
-  MPI_Datatype mpi_type;
-  /*MPI_Status status; */
-
-  /* process the parameters */
-  if (!PyArg_ParseTuple(args, "OOi", &x, &d, &source))
-    return NULL;
-
-  /* Input check and determination of MPI type */          
-  mpi_type = type_map(x, &count);
-  if (!mpi_type) return NULL;  
-   
-  error = MPI_Comm_size(MPI_COMM_WORLD,&numprocs);    
-  count = count/numprocs;  
-  
-  /* call the MPI routine */
-  error = MPI_Scatter(x->data, count, mpi_type, d->data, count, 
-		      mpi_type, source,	MPI_COMM_WORLD);
-	 
-  if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Scatter failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
-    return NULL;
-  }  
-      
-  Py_INCREF(Py_None);
-  return (Py_None);
-}
-
-
-/*************************************************************/
-/* gather_array                                              */
-/* Gather Num.     array of type float, double, int, or long */
-/*                                                           */
-/*************************************************************/
-static PyObject *gather_array(PyObject *self, PyObject *args) {
-  PyArrayObject *x;
-  PyArrayObject *d;
-  int source, error, count, myid;
-  MPI_Datatype mpi_type;
-  /*MPI_Status status; */
-
-  /* process the parameters */
-  if (!PyArg_ParseTuple(args, "OOi", &x, &d, &source))
-    return NULL;
-
-  /* Input check and determination of MPI type */          
-  mpi_type = type_map(x, &count);
-  if (!mpi_type) return NULL;  
-      
-  /* call the MPI routine */
-  error =  MPI_Gather(x->data, count, mpi_type, d->data, count, 
-		      mpi_type, source,	MPI_COMM_WORLD);
-
-  if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Gather failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
-    return NULL;
-  }  
-  
-  Py_INCREF(Py_None);
-  return (Py_None);
-}
-
-
-
-/*************************************************************/
-/* reduce_array                                              */
-/* Reduce Num.     array of type float, double, int, or long */
-/*                                                           */
-/*************************************************************/
-static PyObject *reduce_array(PyObject *self, PyObject *args) {
-  PyArrayObject *x;
-  PyArrayObject *d;
-  int source, op, error, count, count1, myid;
-  MPI_Datatype mpi_type, buffer_type;
-  /*MPI_Status status;*/
-  MPI_Op mpi_op;
-
-  /* process the parameters */
-  if (!PyArg_ParseTuple(args, "OOii", &x, &d, &op, &source)) {
-    PyErr_SetString(PyExc_RuntimeError, 
-		    "mpiext.c (reduce_array): could not parse input");
-    return NULL;
-  }
-   
-  /* Input check and determination of MPI type */          
-  mpi_type = type_map(x, &count);
-  if (!mpi_type) {
-    PyErr_SetString(PyExc_RuntimeError, 
-		    "mpiext.c (reduce_array): could not determine mpi_type");
-    return NULL;  
-  }
-
-  /* This error is caught at the pypar level - so we won't end up here
-     unless mpiext is being used independently */
-  buffer_type = type_map(d, &count1);
-  if (mpi_type != buffer_type) {
-    sprintf(errmsg, "mpiext.c (reduce_array): Input array and buffer must be of the same type.");
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
-		    
-    return NULL;  
-  }
-
-  if (count != count1) {
-    PyErr_SetString(PyExc_RuntimeError, 
-		    "mpiext.c (reduce_array): Input array and buffer must have same length");
-    return NULL;  
-  }
-    
-  /* Input check and determination of MPI op */ 
-  mpi_op = op_map(op);
-  if (!mpi_op) {
-    PyErr_SetString(PyExc_RuntimeError, 
-		    "mpiext.c (reduce_array): could not determine mpi_op");
-    return NULL;  
-  }
-   
-  if (op == MAXLOC || op == MINLOC) {
-    PyErr_SetString(PyExc_RuntimeError, 
-		    "mpiext.c (reduce_array): MAXLOC and MINLOC are not implemented");
-    return NULL;  
-  }
-  else {
-    /* call the MPI routine */
-    error =  MPI_Reduce(x->data, d->data, count, mpi_type, mpi_op, source, \
-			MPI_COMM_WORLD);
-  }
-         
-  if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Reduce failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
-    return NULL;
-  }  
-  
-  Py_INCREF(Py_None);
-  return (Py_None);
-}
 
 /*********************************************************/
-/* MPI calls rank, size, finalize, abort                 */
+/* MPI calls such as rank, size, finalize, abort         */
 /*                                                       */
 /*********************************************************/
-
 static PyObject * rank(PyObject *self, PyObject *args) {
   int error, myid;
 
@@ -979,7 +980,7 @@ static PyObject * size(PyObject *self, PyObject *args) {
   return Py_BuildValue("i", numprocs);
 }
   
-static PyObject * Get_processor_name(PyObject *self, PyObject *args) {  
+static PyObject * get_processor_name(PyObject *self, PyObject *args) {  
   char processor_name[MPI_MAX_PROCESSOR_NAME];
   int  error, namelen, myid;
 
@@ -988,7 +989,7 @@ static PyObject * Get_processor_name(PyObject *self, PyObject *args) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
     sprintf(errmsg, "Proc %d: Get_processor_name failed with error code %d\n", 
 	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);    /*raise ValueError, errmsg*/
+    PyErr_SetString(PyExc_RuntimeError, errmsg);
     return NULL;
   }  
   
@@ -1007,19 +1008,19 @@ static PyObject * init(PyObject *self, PyObject *args) {
     return NULL;
 
   /* Reconstruct C-commandline */     
-  /*                           */ 
-  argc = PyList_Size(input); /*Number of commandline arguments*/
+  argc = PyList_Size(input); /* Number of commandline arguments */
   argv = (char**) malloc((argc+1)*sizeof(char*)); 
   
   for (i=0; i<argc; i++)  
     argv[i] = PyString_AsString( PyList_GetItem(input, i) );
     
-  argv[i] = NULL; /*Lam 7.0 requires last arg to be NULL  */
+  argv[i] = NULL; /* Lam 7.0 requires last arg to be NULL  */
   
   error = MPI_Init(&argc, &argv); 
   if (error != 0) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc ?: MPI_Init failed with error code %d\n", error);
+    sprintf(errmsg, "Proc ?: MPI_Init failed with error code %d\n", 
+	    error);
     PyErr_SetString(PyExc_RuntimeError, errmsg);   
     return NULL;
   }  
@@ -1038,7 +1039,7 @@ static PyObject * initialized(PyObject *self, PyObject *args) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
     sprintf(errmsg, "Proc %d: MPI_Initialized failed with error code %d\n", 
 	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);    /*raise ValueError, errmsg*/
+    PyErr_SetString(PyExc_RuntimeError, errmsg);
     return NULL;
   }  
 
@@ -1055,7 +1056,7 @@ static PyObject * finalize(PyObject *self, PyObject *args) {
   if (error != 0) {
     sprintf(errmsg, "Proc %d: MPI_Finalize failed with error code %d\n", 
 	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);    /*raise ValueError, errmsg*/
+    PyErr_SetString(PyExc_RuntimeError, errmsg);
     return NULL;
   }  
     
@@ -1071,7 +1072,7 @@ static PyObject * mpi_abort(PyObject *self, PyObject *args) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
     sprintf(errmsg, "Proc %d: MPI_Abort failed with error code %d\n", 
 	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);    /*raise ValueError, errmsg*/
+    PyErr_SetString(PyExc_RuntimeError, errmsg);
     return NULL;
   }  
   
@@ -1087,7 +1088,7 @@ static PyObject * barrier(PyObject *self, PyObject *args) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
     sprintf(errmsg, "Proc %d: MPI_Barrier failed with error code %d\n", 
 	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);    /*raise ValueError, errmsg*/
+    PyErr_SetString(PyExc_RuntimeError, errmsg);
     return NULL;
   }  
   
@@ -1106,13 +1107,12 @@ static PyObject * Wtime(PyObject *self, PyObject *args) {
 /**********************************/
 /* Method table for python module */
 /**********************************/
-
 static struct PyMethodDef MethodTable[] = {
   {"size", size, METH_VARARGS},  
   {"rank", rank, METH_VARARGS},  
   {"barrier", barrier, METH_VARARGS},          
   {"time", Wtime, METH_VARARGS},            
-  {"get_processor_name", Get_processor_name, METH_VARARGS},              
+  {"get_processor_name", get_processor_name, METH_VARARGS},              
   {"init", init, METH_VARARGS},          
   {"initialized", initialized, METH_VARARGS},       
   {"finalize", finalize, METH_VARARGS},        
@@ -1131,8 +1131,10 @@ static struct PyMethodDef MethodTable[] = {
   /* Functions providing 'MPI_Bsend' support. */
   {"bsend_string", bsend_string, METH_VARARGS},
   {"bsend_array", bsend_array, METH_VARARGS},
-  {"string_push_for_alloc_and_attach", string_push_for_alloc_and_attach, METH_VARARGS},
-  {"array_push_for_alloc_and_attach", array_push_for_alloc_and_attach, METH_VARARGS},
+  {"string_push_for_alloc_and_attach", string_push_for_alloc_and_attach, 
+   METH_VARARGS},
+  {"array_push_for_alloc_and_attach", array_push_for_alloc_and_attach, 
+   METH_VARARGS},
   {"mpi_alloc_and_attach", mpi_alloc_and_attach, METH_VARARGS},
   {"mpi_detach_and_dealloc", mpi_detach_and_dealloc, METH_VARARGS},
   {"mpi_alloc", mpi_alloc, METH_VARARGS},
@@ -1146,8 +1148,6 @@ static struct PyMethodDef MethodTable[] = {
 /***************************/
 /* Module initialisation   */
 /***************************/
-
-
 void initmpiext(void){
   PyObject *m, *ModDict;
   
@@ -1174,9 +1174,5 @@ void initmpiext(void){
 
   /*SetDictInt("MPI_COMM_WORLD", MPI_COMM_WORLD);  */
    
-  import_array();     /*Necessary for handling of numpy structures  */
+  import_array();     /* Necessary for handling of numpy structures  */
 }
-
- 
- 
-

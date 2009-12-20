@@ -38,7 +38,7 @@ myid = pypar.rank()
 numproc = pypar.size()
 node = pypar.get_processor_name()
 
-print 'I am processor %d of %d on node %s' %(myid, numproc, node)
+print 'I am processor %d of %d on node "%s"' %(myid, numproc, node)
 pypar.barrier()
 
 

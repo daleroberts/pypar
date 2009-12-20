@@ -857,16 +857,19 @@ else:
          MAX, MIN, SUM, PROD, LAND, BAND,\
          LOR, BOR, LXOR, BXOR
 
-    # Work around bug in OpenMPI: 
+    # Work around bug in OpenMPI (December 2009): 
     # https://bugs.launchpad.net/ubuntu/+source/petsc4py/+bug/232036
     from ctypes import *
     mpi = CDLL('libmpi.so.0', RTLD_GLOBAL)
     # End work around
 
-    init(sys.argv) # Initialise MPI with cmd line (needed by MPICH/Linux)
+    # Initialise MPI with cmd line (needed by MPICH/Linux)
+    init(sys.argv) 
 
+    # Report
     if rank() == 0:     
-        print "Pypar (version %s) initialised MPI OK with %d processors" %(__version__, size())
+        print 'Pypar (version %s) initialised MPI OK with %d processors'\
+            % (__version__, size())
 
 
 
