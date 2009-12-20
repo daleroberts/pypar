@@ -1,7 +1,9 @@
-Release notes from version 77 to  :
+Release notes from version 77 to 87 (v 2.1.2):
 
 Got rid of raw communication forms in test suite.
 The buffered forms are now consistently shown.
+
+Lots of cleanup.
 
 
 Release notes from version 49 to 76:
