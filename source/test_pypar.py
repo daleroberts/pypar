@@ -50,9 +50,6 @@ def raw_scatter(x, buffer, source, vanilla=0):
     pypar.scatter(x, source, buffer=buffer, vanilla=vanilla)
 
 
-def raw_gather(x, buffer, source, vanilla=0):
-    pypar.gather(x, source, buffer=buffer, vanilla=0)  
-
 def raw_reduce(x, buffer, op, source, vanilla=0):
     pypar.reduce(x, op, source, buffer=buffer, vanilla=0)
 
@@ -747,13 +744,13 @@ if numproc > 1:
 
   # Test gather  - with/without buffers (arrays, strings)
   #
-  N = 17 #Number of elements
+  N = 17 # Number of elements
       
   testString = 'AB'
-  X = '_'*(len(testString)*numproc)    #Blanks caused errors when numproc >= 6 
-  raw_gather(testString, X, 0)
+  X = '_'*(len(testString)*numproc) # Blanks caused errors when numproc >= 6 
 
-  Y =  pypar.gather(testString, 0) 
+  pypar.gather(testString, 0, buffer=X) # Using buffer  
+  Y = pypar.gather(testString, 0) # Create buffer automatically
   
   if myid == 0:
     assert X == 'AB' * numproc
@@ -763,10 +760,10 @@ if numproc > 1:
 
   testArray = numpy.array(range(N)).astype('i')
   X = numpy.zeros(N*numproc).astype('i')
-  raw_gather(testArray, X, 0)
 
-  Y = pypar.gather(testArray, 0)
-  
+  pypar.gather(testArray, 0, buffer=X) # Using buffer  
+  Y = pypar.gather(testArray, 0) # Create buffer automatically
+
   if myid == 0:
     for i in range(numproc):       
       assert numpy.allclose(testArray, X[(i * N): ((i+1)*N)])
@@ -777,9 +774,10 @@ if numproc > 1:
     
   testArray = numpy.array(range(N)).astype('f')
   X = numpy.zeros(N*numproc).astype('f')
-  raw_gather(testArray, X, 0)
-  
-  Y = pypar.gather(testArray, 0)
+
+  pypar.gather(testArray, 0, buffer=X) # Using buffer  
+  Y = pypar.gather(testArray, 0) # Create buffer automatically
+
   if myid == 0:
     for i in range(numproc):       
       assert numpy.allclose(testArray, X[(i * N): ((i+1)*N)])
@@ -789,9 +787,10 @@ if numproc > 1:
   
   testArray = numpy.array(range(N)).astype('D')
   X = numpy.zeros(N*numproc).astype('D')
-  raw_gather(testArray, X, 0)
-  
-  Y = pypar.gather(testArray, 0)
+
+  pypar.gather(testArray, 0, buffer=X) # Using buffer  
+  Y = pypar.gather(testArray, 0) # Create buffer automatically
+
   if myid == 0:
     for i in range(numproc):       
       assert numpy.allclose(testArray, X[(i * N): ((i+1)*N)])
@@ -804,9 +803,9 @@ if numproc > 1:
   X = numpy.zeros(M*N*numproc).astype('D')
   X = numpy.reshape(X, (M*numproc,N))
   
-  raw_gather(testArray, X, 0)
-  
-  Y = pypar.gather(testArray, 0)
+  pypar.gather(testArray, 0, buffer=X) # Using buffer  
+  Y = pypar.gather(testArray, 0) # Create buffer automatically
+
   if myid == 0:
     for i in range(numproc):       
       assert numpy.allclose(testArray, X[(i * M): ((i+1)*M), :])
