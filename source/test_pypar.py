@@ -46,10 +46,6 @@ def raw_receive(x, source, tag=pypar.default_tag, vanilla=0, return_status=0):
                       return_status=return_status, buffer=x)
     return x
 
-def raw_scatter(x, buffer, source, vanilla=0):
-    pypar.scatter(x, source, buffer=buffer, vanilla=vanilla)
-
-
 
 myid =    pypar.rank()
 numproc = pypar.size()
@@ -641,31 +637,30 @@ if numproc > 1:
 
   # Test scatter  - with/without buffers (arrays, strings)
   #
-  N = 16 #Number of elements
+  N = 16 # Number of elements
 
   NP = N/numproc
   
   testString = 'ABCDEFGHIJKLMNOP'  #Length = 16
   X = ' '*NP
 
-  #print 'P%d: s=%s, r=%s' %(myid, testString, X)
-  #raw_scatter(testString, X, 2)
-  #Y = pypar.scatter(testString, 2)
+  pypar.scatter(testString, 0, buffer=X) # With buffer
+  Y = pypar.scatter(testString, 0) # With buffer automatically created
 
+  assert X==Y, 'X=%s, Y=%s' %(X,Y)
+  assert Y == testString[myid*NP:(myid+1)*NP]
+  assert X == testString[myid*NP:(myid+1)*NP]
 
-  #assert X==Y, 'X=%s, Y=%s' %(X,Y)
-  #assert Y == testString[myid*NP:(myid+1)*NP]
-  #assert X == testString[myid*NP:(myid+1)*NP]
-
-  #if myid == 0:    
-  #  print "Scatter communication of strings OK"
+  if myid == 0:    
+    print "Scatter communication of strings OK"
     
 
   #Scatter Arrays
   testArray = numpy.array(range(N)).astype('i')
   X = numpy.zeros(NP).astype('i')
-  raw_scatter(testArray, X, 0)
-  Y = pypar.scatter(testArray, 0)
+
+  pypar.scatter(testArray, 0, buffer=X) # With buffer
+  Y = pypar.scatter(testArray, 0) # With buffer automatically created
 
   assert numpy.allclose(X, Y)  
   assert numpy.allclose(X, testArray[myid*NP:(myid+1)*NP])
@@ -677,9 +672,9 @@ if numproc > 1:
 
   testArray = numpy.array(range(N)).astype('f')
   X = numpy.zeros(NP).astype('f')
-  raw_scatter(testArray, X, 0)
-    
-  Y = pypar.scatter(testArray, 0)
+
+  pypar.scatter(testArray, 0, buffer=X) # With buffer
+  Y = pypar.scatter(testArray, 0) # With buffer automatically created
 
   assert numpy.allclose(X, Y)  
   assert numpy.allclose(X, testArray[myid*NP:(myid+1)*NP])
@@ -693,9 +688,9 @@ if numproc > 1:
 
   testArray = numpy.array(range(N)).astype('D')
   X = numpy.zeros(NP).astype('D')
-  raw_scatter(testArray, X, 0)
-    
-  Y = pypar.scatter(testArray, 0)
+
+  pypar.scatter(testArray, 0, buffer=X) # With buffer
+  Y = pypar.scatter(testArray, 0) # With buffer automatically created
 
   assert numpy.allclose(X, Y)  
   assert numpy.allclose(X, testArray[myid*NP:(myid+1)*NP])
