@@ -43,7 +43,7 @@ pypar.barrier()
 
 
 if numproc > 1:
-  # Test simple raw communication (arrays, strings and general)
+  # Test simple buffered communication (arrays, strings and general)
   #
   N = 17 #Number of elements
   
@@ -53,13 +53,11 @@ if numproc > 1:
     A = numpy.array(range(N)).astype('i')
     B = numpy.zeros(N).astype('i')
 
-    #raw_send(A,1)
     pypar.send(A, 1, use_buffer=True)
-    #raw_receive(B,numproc-1)
     B = pypar.receive(numproc-1, buffer=B)
 
     assert numpy.allclose(A, B)
-    print 'Raw communication of numeric integer arrays OK'
+    print 'Buffered communication of numeric integer arrays OK'
 
 
     # Long integer arrays
@@ -71,7 +69,7 @@ if numproc > 1:
     B = pypar.receive(numproc-1, buffer=B)
     
     assert numpy.allclose(A, B)
-    print "Raw communication of numeric long integer arrays OK"
+    print 'Buffered communication of numeric long integer arrays OK'
 
     # Real arrays
     #
@@ -82,7 +80,7 @@ if numproc > 1:
     B = pypar.receive(numproc-1, buffer=B)
     
     assert numpy.allclose(A, B)    
-    print "Raw communication of numeric real arrays OK"
+    print 'Buffered communication of numeric real arrays OK'
 
     # Complex arrays
     #
@@ -94,7 +92,7 @@ if numproc > 1:
     B = pypar.receive(numproc-1, buffer=B)
 
     assert numpy.allclose(A, B)    
-    print "Raw communication of numeric complex arrays OK"
+    print 'Buffered communication of numeric complex arrays OK'
 
     # Strings (< 256 characters)
     #
@@ -104,11 +102,9 @@ if numproc > 1:
     pypar.send(A, 1, use_buffer=True)
     B, status = pypar.receive(numproc-1, buffer=B, return_status=True)
 
-    #raw_send(A,1)
-    #B, status = raw_receive(B,numproc-1,return_status=True)
 
     assert A == B
-    print "Raw communication of strings OK"
+    print 'Buffered communication of strings OK'
     
     # A more general structure
     #
@@ -117,8 +113,6 @@ if numproc > 1:
 
     pypar.send(A, 1, use_buffer=True)
     B, status = pypar.receive(numproc-1, buffer=B, return_status=True)
-    #raw_send(A,1)
-    #B, status = raw_receive(B,numproc-1, return_status=True)
 
     OK = True
     for i, a in enumerate(A):
@@ -133,7 +127,7 @@ if numproc > 1:
         break
 
     if OK is True:
-      print 'Raw communication of general structures OK' 
+      print 'Buffered communication of general structures OK' 
     else:
       raise Exception    
 
@@ -145,54 +139,42 @@ if numproc > 1:
 
     X = pypar.receive(myid-1, buffer=X)
     pypar.send(X, (myid+1)%numproc, use_buffer=True)
-    #raw_receive(X, myid-1)  
-    #raw_send(X, (myid+1)%numproc)
   
     # Long integers
     #
     X = numpy.zeros(N).astype('l')
     X = pypar.receive(myid-1, buffer=X)
     pypar.send(X, (myid+1)%numproc, use_buffer=True)
-    #raw_receive(X, myid-1)  
-    #raw_send(X, (myid+1)%numproc)    
 
     # Floats
     #
     X = numpy.zeros(N).astype('f')
     X = pypar.receive(myid-1, buffer=X)
     pypar.send(X, (myid+1)%numproc, use_buffer=True)
-    #raw_receive(X, myid-1)  
-    #raw_send(X, (myid+1)%numproc)    
 
     # Complex
     #
     X = numpy.zeros(N).astype('D')
     X = pypar.receive(myid-1, buffer=X)
     pypar.send(X, (myid+1)%numproc, use_buffer=True)
-    #X = raw_receive(X, myid-1)  
-    #raw_send(X, (myid+1)%numproc)    
 
     # Strings
     #
     X = " "*256
     X = pypar.receive(myid-1, buffer=X)
     pypar.send(X.strip(), (myid+1)%numproc, use_buffer=True)
-    #raw_receive(X, myid-1)  
-    #raw_send(X.strip(), (myid+1)%numproc)    
 
     # General
     #
     X = ['   ', (0,0,0.0), {0: '     '}, numpy.zeros(2).astype('f')]
     X = pypar.receive(myid-1, buffer=X)
     pypar.send(X, (myid+1)%numproc, use_buffer=True)
-    #X = raw_receive(X, myid-1)  
-    #raw_send(X, (myid+1)%numproc)    
     
 
 
 
 
-  #Test (raw communication of) multi dimensional arrays
+  #Test (buffered communication of) multi dimensional arrays
 
   M = 13  #Number of elements in dim 1
   N = 17  #Number of elements in higher dims
@@ -208,11 +190,9 @@ if numproc > 1:
     
     pypar.send(A, 1, use_buffer=True)
     B = pypar.receive(numproc-1, buffer=B)
-    #raw_send(A,1)
-    #raw_receive(B,numproc-1)
     
     assert numpy.allclose(A, B)    
-    print "Raw communication of 2D real arrays OK"
+    print 'Buffered communication of 2D real arrays OK'
 
     # 2D complex arrays
     #
@@ -224,11 +204,9 @@ if numproc > 1:
 
     pypar.send(A, 1, use_buffer=True)
     B = pypar.receive(numproc-1, buffer=B)
-    #raw_send(A,1)
-    #raw_receive(B,numproc-1)
     
     assert numpy.allclose(A, B)    
-    print "Raw communication of 2D complex arrays OK"
+    print 'Buffered communication of 2D complex arrays OK'
 
     # 3D real arrays
     #
@@ -241,11 +219,9 @@ if numproc > 1:
 
     pypar.send(A, 1, use_buffer=True)
     B = pypar.receive(numproc-1, buffer=B)
-    #raw_send(A,1)
-    #raw_receive(B,numproc-1)
     
     assert numpy.allclose(A, B)    
-    print "Raw communication of 3D real real arrays OK"
+    print 'Buffered communication of 3D real real arrays OK'
 
     # 4D real arrays
     #
@@ -257,11 +233,9 @@ if numproc > 1:
 
     pypar.send(A, 1, use_buffer=True)
     B = pypar.receive(numproc-1, buffer=B)
-    #raw_send(A,1)
-    #raw_receive(B,numproc-1)
     
     assert numpy.allclose(A, B)    
-    print "Raw communication of 4D real real arrays OK"
+    print 'Buffered communication of 4D real real arrays OK'
 
     # 5D real arrays
     #
@@ -273,11 +247,9 @@ if numproc > 1:
     
     pypar.send(A, 1, use_buffer=True)
     B = pypar.receive(numproc-1, buffer=B)
-    #raw_send(A,1)
-    #raw_receive(B,numproc-1)
     
     assert numpy.allclose(A, B)    
-    print "Raw communication of 5D real real arrays OK"
+    print 'Buffered communication of 5D real real arrays OK'
 
     # 5D double arrays
     #
@@ -289,11 +261,9 @@ if numproc > 1:
     
     pypar.send(A, 1, use_buffer=True)
     B = pypar.receive(numproc-1, buffer=B)
-    #raw_send(A,1)
-    #raw_receive(B,numproc-1)
     
     assert numpy.allclose(A, B)    
-    print "Raw communication of 5D double arrays OK"
+    print 'Buffered communication of 5D double arrays OK'
 
     # 5D complex arrays
     #
@@ -305,11 +275,9 @@ if numproc > 1:
     
     pypar.send(A, 1, use_buffer=True)
     B = pypar.receive(numproc-1, buffer=B)
-    #raw_send(A,1)
-    #raw_receive(B,numproc-1)
     
     assert numpy.allclose(A, B)    
-    print "Raw communication of 5D complex arrays OK"
+    print 'Buffered communication of 5D complex arrays OK'
   else:  
     # 2D real arrays
     #
@@ -318,8 +286,6 @@ if numproc > 1:
     
     X = pypar.receive(myid-1, buffer=X)
     pypar.send(X, (myid+1)%numproc, use_buffer=True)
-    #raw_receive(X, myid-1)  
-    #raw_send(X, (myid+1)%numproc)
   
     # 2D complex arrays
     #
@@ -328,8 +294,6 @@ if numproc > 1:
 
     X = pypar.receive(myid-1, buffer=X)
     pypar.send(X, (myid+1)%numproc, use_buffer=True)
-    #X = raw_receive(X, myid-1)
-    #raw_send(X, (myid+1)%numproc)
   
     # 3D real arrays
     #
@@ -338,8 +302,6 @@ if numproc > 1:
     
     X = pypar.receive(myid-1, buffer=X)
     pypar.send(X, (myid+1)%numproc, use_buffer=True)
-    #raw_receive(X, myid-1)  
-    #raw_send(X, (myid+1)%numproc)
 
     # 4D real arrays
     #
@@ -348,8 +310,6 @@ if numproc > 1:
     
     X = pypar.receive(myid-1, buffer=X)
     pypar.send(X, (myid+1)%numproc, use_buffer=True)
-    #raw_receive(X, myid-1)  
-    #raw_send(X, (myid+1)%numproc)
 
     # 5D real arrays
     #
@@ -358,8 +318,6 @@ if numproc > 1:
     
     X = pypar.receive(myid-1, buffer=X)
     pypar.send(X, (myid+1)%numproc, use_buffer=True)
-    #raw_receive(X, myid-1)  
-    #raw_send(X, (myid+1)%numproc)
 
     # 5D double arrays
     #
@@ -368,8 +326,6 @@ if numproc > 1:
     
     X = pypar.receive(myid-1, buffer=X)
     pypar.send(X, (myid+1)%numproc, use_buffer=True)
-    #raw_receive(X, myid-1)  
-    #raw_send(X, (myid+1)%numproc)
 
     # 5D complex arrays
     #
@@ -378,8 +334,6 @@ if numproc > 1:
     
     X = pypar.receive(myid-1, buffer=X)
     pypar.send(X, (myid+1)%numproc, use_buffer=True)
-    #raw_receive(X, myid-1)  
-    #raw_send(X, (myid+1)%numproc)
 
   # Test easy communication  - without buffers (arrays, strings and general)
   #
@@ -852,19 +806,19 @@ if numproc > 1:
     for i in range(numproc):
       Y = Y + numpy.array(range(N), 'i')*(i+1)    
     assert numpy.allclose(X, Y)
-    print "Raw reduce using pypar.SUM OK"
+    print 'Buffered reduce using pypar.SUM OK'
         
   pypar.reduce(testArray, pypar.MAX, 0, buffer=X)
   if myid == 0:
     Y = numpy.array(range(N))*numproc
     assert numpy.allclose(X, Y)
-    print "Raw reduce using pypar.MAX OK"
+    print 'Buffered reduce using pypar.MAX OK'
 
   pypar.reduce(testArray, pypar.MIN, 0, buffer=X)
   if myid == 0:
     Y = numpy.array(range(N))
     assert numpy.allclose(X, Y)
-    print "Raw reduce using pypar.MIN OK"
+    print 'Buffered reduce using pypar.MIN OK'
     
   if numproc <= 20:
     testArray_float = testArray.astype('f')  #Make room for big results
@@ -878,7 +832,7 @@ if numproc > 1:
       #print X_float
       #print Y  
       assert numpy.allclose(X_float, Y)
-      print "Raw reduce using pypar.PROD OK"
+      print 'Buffered reduce using pypar.PROD OK'
   else:
     if myid == 0:
       print "Skipping product-reduce - try again with numproc < 20"    
@@ -889,7 +843,7 @@ if numproc > 1:
     for i in range(numproc):
       Y = numpy.logical_and(Y, numpy.array(range(N)).astype('i')*(i+1))  
     assert numpy.allclose(X, Y)
-    print "Raw reduce using pypar.LAND OK"    
+    print 'Buffered reduce using pypar.LAND OK'
     
   pypar.reduce(testArray, pypar.BAND, 0, buffer=X)
   if myid == 0:
@@ -897,7 +851,7 @@ if numproc > 1:
     for i in range(numproc):
       Y = numpy.bitwise_and(Y, numpy.array(range(N))*(i+1))
     assert numpy.allclose(X, Y)
-    print "Raw reduce using pypar.BAND OK"    
+    print 'Buffered reduce using pypar.BAND OK'    
 
   pypar.reduce(testArray, pypar.LOR, 0, buffer=X)
   if myid == 0:  
@@ -905,7 +859,7 @@ if numproc > 1:
     for i in range(numproc):
       Y = numpy.logical_or(Y, numpy.array(range(N)).astype('i')*(i+1))  
     assert numpy.allclose(X, Y)
-    print "Raw reduce using pypar.LOR OK"    
+    print 'Buffered reduce using pypar.LOR OK'
   
   pypar.reduce(testArray, pypar.BOR, 0, buffer=X)
   if myid == 0:
@@ -913,7 +867,7 @@ if numproc > 1:
     for i in range(numproc):
       Y = numpy.bitwise_or(Y, numpy.array(range(N)).astype('i')*(i+1))
     assert numpy.allclose(X, Y)
-    print "Raw reduce using pypar.BOR OK"    
+    print 'Buffered reduce using pypar.BOR OK'    
 
   pypar.reduce(testArray, pypar.LXOR, 0, buffer=X)
   if myid == 0:  
@@ -921,7 +875,7 @@ if numproc > 1:
     for i in range(numproc):
       Y = numpy.logical_xor(Y, numpy.array(range(N)).astype('i')*(i+1))  
     assert numpy.allclose(X, Y)
-    print "Raw reduce using pypar.LXOR OK"    
+    print 'Buffered reduce using pypar.LXOR OK'
 
   pypar.reduce(testArray, pypar.BXOR, 0, buffer=X)
   if myid == 0:
@@ -929,7 +883,7 @@ if numproc > 1:
     for i in range(numproc):
       Y = numpy.bitwise_xor(Y, numpy.array(range(N)).astype('i')*(i+1))
     assert numpy.allclose(X, Y)
-    print "Raw reduce using pypar.BXOR OK"    
+    print 'Buffered reduce using pypar.BXOR OK'    
 
   # FIXME: NOT YET SUPPORTED: pypar.MAXLOC, pypar.MINLOC, pypar.REPLACE
 
@@ -1066,7 +1020,7 @@ if numproc > 1:
 
 
 
-  # Test status block (raw communication)
+  # Test status block (buffered communication)
   N = 17 # Number of elements
   if myid == 0:
     # Integer arrays
@@ -1076,8 +1030,6 @@ if numproc > 1:
 
     pypar.send(A, 1, use_buffer=True)
     B, status = pypar.receive(numproc-1, buffer=B, return_status=True)
-    #raw_send(A,1)
-    #B, status = raw_receive(B,numproc-1,return_status=True)
     
     assert numpy.allclose(A, B)
 
@@ -1093,7 +1045,7 @@ if numproc > 1:
     assert status.source == numproc-1, 'Reported source == %d should be %d'\
            %(status.source, numproc-1)
 
-    print "Status object (raw numeric integer arrays) OK"
+    print "Status object (buffered numeric integer arrays) OK"
 
 
     # Real arrays
@@ -1102,8 +1054,6 @@ if numproc > 1:
     B = numpy.zeros(N).astype('f')    
     pypar.send(A, 1, use_buffer=True)
     B, status = pypar.receive(numproc-1, buffer=B, return_status=True)
-    #raw_send(A,1)
-    #B, status = raw_receive(B,numproc-1,return_status=True)    
     
     assert numpy.allclose(A, B)
     sz = A.itemsize
@@ -1118,7 +1068,7 @@ if numproc > 1:
     assert status.source == numproc-1, 'Reported source == %d should be %d'\
            %(status.source, numproc-1)
 
-    print "Status object (raw numeric real arrays) OK"
+    print "Status object (buffered numeric real arrays) OK"
 
     # Strings (< 256 characters)
     #
@@ -1127,9 +1077,6 @@ if numproc > 1:
 
     pypar.send(A, 1, use_buffer=True)
     B, status = pypar.receive(numproc-1, buffer=B, return_status=True)
-    #raw_send(A,1)
-    #B, status = raw_receive(B,numproc-1,return_status=True)
-
 
     sz = 1 #Characters are one byte long
     assert A == B
@@ -1143,7 +1090,7 @@ if numproc > 1:
     assert status.source == numproc-1, 'Reported source == %d should be %d'\
            %(status.source, numproc-1)
 
-    print "Status object (raw strings) OK"
+    print "Status object (buffered strings) OK"
     
 
     
@@ -1153,9 +1100,6 @@ if numproc > 1:
     B = ['   ', (0,0,0.0), {0: '     '}, numpy.zeros(2).astype('f')]    
     pypar.send(A, 1, use_buffer=True)
     B, status = pypar.receive(numproc-1, buffer=B, return_status=True)
-    #raw_send(A,1)
-    #B, status = raw_receive(B,numproc-1, return_status=True)
-
 
     #assert A == B
     sz = 1
@@ -1168,7 +1112,7 @@ if numproc > 1:
            %(status.source, numproc-1)
 
     
-    print "Status object (raw general structures) OK"
+    print "Status object (buffered general structures) OK"
     
    
   else:  
@@ -1179,8 +1123,6 @@ if numproc > 1:
 
     X = pypar.receive(myid-1, buffer=X)
     pypar.send(X, (myid+1)%numproc, use_buffer=True)
-    #raw_receive(X, myid-1)  
-    #raw_send(X, (myid+1)%numproc)
   
     # Floats
     #
@@ -1188,8 +1130,6 @@ if numproc > 1:
 
     X = pypar.receive(myid-1, buffer=X)
     pypar.send(X, (myid+1)%numproc, use_buffer=True)
-    #raw_receive(X, myid-1)  
-    #raw_send(X, (myid+1)%numproc)    
 
     
     # Strings
@@ -1197,17 +1137,12 @@ if numproc > 1:
     X = " "*256
     X = pypar.receive(myid-1, buffer=X)
     pypar.send(X.strip(), (myid+1)%numproc, use_buffer=True)
-    #X = raw_receive(X, myid-1)  
-    #raw_send(X.strip(), (myid+1)%numproc)    
 
     # General
     #
     X = ['   ', (0,0,0.0), {0: '     '}, numpy.zeros(2).astype('f')]
     X = pypar.receive(myid-1, buffer=X)
     pypar.send(X, (myid+1)%numproc, use_buffer=True)
-    #X = raw_receive(X, myid-1)  
-    #raw_send(X, (myid+1)%numproc)    
-    
 
 
 pypar.finalize()
