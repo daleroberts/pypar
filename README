@@ -67,7 +67,13 @@ PRE-REQUISITES (on all nodes)
     MPICH on Windows (NT/2000)
     MPICH for Darwin (Mac OS)
     LAM/MPI with Linux on Opteron 64 bit
+    OPENMPI with Linux on Opteron 64 bit
     OPENMPI with Ubuntu Linux (32 bit)
+
+   
+  On Ubuntu systems you need to install the following packages:
+  apt-get install openmpi
+  apt-get install libopenmpi-dev
    
   
 INSTALL
