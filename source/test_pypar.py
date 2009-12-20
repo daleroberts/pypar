@@ -50,20 +50,6 @@ def raw_scatter(x, buffer, source, vanilla=0):
     pypar.scatter(x, source, buffer=buffer, vanilla=vanilla)
 
 
-def raw_reduce(x, buffer, op, source, vanilla=0):
-    pypar.reduce(x, op, source, buffer=buffer, vanilla=0)
-
-
-
-
-
-
-
-
-
-
-
-
 
 myid =    pypar.rank()
 numproc = pypar.size()
@@ -822,7 +808,8 @@ if numproc > 1:
   testArray = numpy.array(range(N), 'i') * (myid+1)
   X = numpy.zeros(N, 'i') # Buffer for results
 
-  raw_reduce(testArray, X, pypar.SUM, 0)
+  pypar.reduce(testArray, pypar.SUM, 0, buffer=X)
+
   if myid == 0:
     Y = numpy.zeros(N, 'i')
     for i in range(numproc):
@@ -830,13 +817,13 @@ if numproc > 1:
     assert numpy.allclose(X, Y)
     print "Raw reduce using pypar.SUM OK"
         
-  raw_reduce(testArray, X, pypar.MAX, 0, 0)
+  pypar.reduce(testArray, pypar.MAX, 0, buffer=X)
   if myid == 0:
     Y = numpy.array(range(N))*numproc
     assert numpy.allclose(X, Y)
     print "Raw reduce using pypar.MAX OK"
 
-  raw_reduce(testArray, X, pypar.MIN, 0, 0)
+  pypar.reduce(testArray, pypar.MIN, 0, buffer=X)
   if myid == 0:
     Y = numpy.array(range(N))
     assert numpy.allclose(X, Y)
@@ -845,7 +832,8 @@ if numproc > 1:
   if numproc <= 20:
     testArray_float = testArray.astype('f')  #Make room for big results
     X_float = X.astype('f')
-    raw_reduce(testArray_float, X_float, pypar.PROD, 0, 0)
+
+    pypar.reduce(testArray_float, pypar.PROD, 0, buffer=X_float)
     if myid == 0:
       Y = numpy.ones(N).astype('f')    
       for i in range(numproc):
@@ -858,7 +846,7 @@ if numproc > 1:
     if myid == 0:
       print "Skipping product-reduce - try again with numproc < 20"    
 
-  raw_reduce(testArray, X, pypar.LAND, 0, 0)
+  pypar.reduce(testArray, pypar.LAND, 0, buffer=X)
   if myid == 0:  
     Y = numpy.ones(N).astype('i')    
     for i in range(numproc):
@@ -866,7 +854,7 @@ if numproc > 1:
     assert numpy.allclose(X, Y)
     print "Raw reduce using pypar.LAND OK"    
     
-  raw_reduce(testArray, X, pypar.BAND, 0, 0)
+  pypar.reduce(testArray, pypar.BAND, 0, buffer=X)
   if myid == 0:
     Y = numpy.ones(N).astype('i')*255  #Neutral element for &   
     for i in range(numproc):
@@ -874,7 +862,7 @@ if numproc > 1:
     assert numpy.allclose(X, Y)
     print "Raw reduce using pypar.BAND OK"    
 
-  raw_reduce(testArray, X, pypar.LOR, 0, 0)
+  pypar.reduce(testArray, pypar.LOR, 0, buffer=X)
   if myid == 0:  
     Y = numpy.zeros(N).astype('i')    
     for i in range(numproc):
@@ -882,7 +870,7 @@ if numproc > 1:
     assert numpy.allclose(X, Y)
     print "Raw reduce using pypar.LOR OK"    
   
-  raw_reduce(testArray, X, pypar.BOR, 0, 0)
+  pypar.reduce(testArray, pypar.BOR, 0, buffer=X)
   if myid == 0:
     Y = numpy.zeros(N).astype('i')   #Neutral element for |   
     for i in range(numproc):
@@ -890,7 +878,7 @@ if numproc > 1:
     assert numpy.allclose(X, Y)
     print "Raw reduce using pypar.BOR OK"    
 
-  raw_reduce(testArray, X, pypar.LXOR, 0, 0)
+  pypar.reduce(testArray, pypar.LXOR, 0, buffer=X)
   if myid == 0:  
     Y = numpy.zeros(N).astype('i')    
     for i in range(numproc):
@@ -898,7 +886,7 @@ if numproc > 1:
     assert numpy.allclose(X, Y)
     print "Raw reduce using pypar.LXOR OK"    
 
-  raw_reduce(testArray, X, pypar.BXOR, 0, 0)
+  pypar.reduce(testArray, pypar.BXOR, 0, buffer=X)
   if myid == 0:
     Y = numpy.zeros(N).astype('i')   #Neutral element for xor ?   
     for i in range(numproc):
@@ -906,23 +894,7 @@ if numproc > 1:
     assert numpy.allclose(X, Y)
     print "Raw reduce using pypar.BXOR OK"    
 
-  # NOT YET SUPPORTED
-  #  
-  #raw_reduce(testArray, X, N, pypar.MAXLOC, 0, 0)  
-  #if myid == 0:
-  #  print 'MAXLOC', X
-  #raw_reduce(testArray, X, N, pypar.MINLOC, 0, 0)
-  #if myid == 0:
-  #  print 'MINLOC', X
-  
-  #
-  #  FIXME
-  # Don't know how to test this (not available on all MPI systems)
-  #
-  #raw_reduce(testArray, X, N, pypar.REPLACE, 0, 0)
-  #if myid == 0:
-  #  print 'REPLACE', X
-
+  # FIXME: NOT YET SUPPORTED: pypar.MAXLOC, pypar.MINLOC, pypar.REPLACE
 
 
   # Test status block (simple communication)
