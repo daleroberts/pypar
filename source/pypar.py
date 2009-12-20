@@ -77,6 +77,10 @@ def send(x, destination, use_buffer=False, vanilla=False,
        numpy variables and text strings will most efficient.
        Setting vanilla = 1 forces vanilla mode for any type.
 
+       If use_buffer is True, workspace x will be used for the return value.
+       In this case the corresponding receive call must specify a buffer.
+       Otherwise a new workspace will be created by receive.
+
        If bypass is True, all admin and error checks
        get bypassed to reduce the latency. Should only
        be used for sending numpy arrays and should be matched
