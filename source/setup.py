@@ -31,7 +31,7 @@ from distutils.core import setup, Extension
 import distutils.sysconfig
 import distutils.debug
 import os, sys
-import popen2
+import popen2 # FIXME: Replace with subprocess - http://docs.python.org/library/subprocess.html#replacing-older-functions-with-the-subprocess-module
 import string
 import tempfile
 import numpy
@@ -75,7 +75,7 @@ def _run_command(cmd):
 def _get_mpi_cmd():
     """Returns the output of the command used to compile using
     mpicc."""
-    # LAM
+    # LAM/OPENMPI
     output = _run_command("mpicc -showme")
     if output:
         return output
