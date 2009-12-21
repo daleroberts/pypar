@@ -76,9 +76,12 @@ def _get_mpi_cmd():
     """Returns the output of the command used to compile using
     mpicc."""
     # LAM/OPENMPI
-    output = _run_command("mpicc -showme")
+    output = _run_command("mpicc -show")
     if output:
         return output
+
+    # FIXME: If MPICH actually works with the above, we can delete
+    # hacks below.
 
     # MPICH
     # works with MPICH version 1.2.1 (on Debian)
