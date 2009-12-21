@@ -43,8 +43,8 @@ def setup_compiler():
     config_vars = distutils.sysconfig._config_vars
     
     if sys.platform == 'sunos5':
-        config_vars['LDSHARED'] = "gcc -G"
-        config_vars['CCSHARED'] = ""
+        config_vars['LDSHARED'] = 'gcc -G'
+        config_vars['CCSHARED'] = ''
         
 
 def uniq_arr(arr):
@@ -57,72 +57,47 @@ def uniq_arr(arr):
 
 
 def _run_command(cmd):
+    """Get mpi compile command
+    """
     out_file, in_file, err_file = popen2.popen3(cmd)
     output = out_file.read() + err_file.read()
     out_file.close()
     in_file.close()
     err_file.close()
-    # need this hack to get the exit status
+    # Need this hack to get the exit status
     out_file = os.popen(cmd)
     if out_file.close():
-        # close returns exit status of command.
+        # Close returns exit status of command.
         return ""
     else:
-        # no errors, out_file.close() returns None.
+        # No errors, out_file.close() returns None.
         return output
 
 
 def _get_mpi_cmd():
     """Returns the output of the command used to compile using
     mpicc."""
-    # LAM/OPENMPI
-    output = _run_command("mpicc -show")
-    if output:
-        return output
 
-    # FIXME: If MPICH actually works with the above, we can delete
-    # hacks below.
-
-    # MPICH
-    # works with MPICH version 1.2.1 (on Debian)
-    output = _run_command("mpicc -compile_info -link_info")
-    if output:
-        return output
-
-    # old version of MPICH needs this hack.
-    tmp_base = tempfile.mktemp()
-    tmp_c = tmp_base + ".c"
-    tmp_o = tmp_base + ".o"
-    tmp_file = open(tmp_c, "w")
-    tmp_file.write('#include "mpi.h"\nint main(){return 0;}\n')
-    tmp_file.close()
-    output = _run_command("mpicc -show;"\
-                          "mpicc -echo -c %s -o %s"%(tmp_c, tmp_o))
-    os.remove(tmp_c)
-    if os.path.exists(tmp_o):
-        os.remove(tmp_o)
+    # LAM/OPENMPI/MPICH2
+    output = _run_command('mpicc -show')
     if output:
         return output
     else:
-        return ""
+        # Try to get mpi command anyway
 
+        if sys.platform=='win32': # From Simon Frost
+            # This didn't work on my machine (Vladimir Lazunin on April 7, 2009)
+            # output = "gcc -L$MPICH_DIR\SDK.gcc\lib -lmpich -I$MPICH_DIR\SDK.gcc\include"
 
-def get_mpi_flags():
-    output = _get_mpi_cmd()
-    print output
-    if not output:
-        if sys.platform=='win32': #From Simon Frost
-            #this didn't work on my machine (Vladimir Lazunin on April 7, 2009)
-            #output = "gcc -L$MPICH_DIR\SDK.gcc\lib -lmpich -I$MPICH_DIR\SDK.gcc\include"
-
-            #"MPICH_DIR" must be set manually in environment variables
+            # "MPICH_DIR" must be set manually in environment variables
             mpi_dir = os.getenv("MPICH_DIR")
 
-            #for MPICH2
+            # for MPICH2
             sdk_prefix = mpi_dir
             lib_name = "mpi"
 
-            #for MPICH1
+            # for MPICH1
+            # FIXME (Ole): Can this be phased out?
             if os.path.exists(sdk_prefix + "\\SDK"):
                 sdk_prefix += "\\SDK"
                 lib_name = "mpich"
@@ -130,10 +105,23 @@ def get_mpi_flags():
         else:
             output = "cc -L/usr/opt/mpi -lmpi -lelan"
 
+           
+        return output
 
-    # now get the include, library dirs and the libs to link with.
+
+
+def get_mpi_flags():
+    output = _get_mpi_cmd()
+    if not output:
+        msg = 'Could not get mpi compile command'
+        raise Exception(msg)
+
+    print output
+
+
+    # Now get the include, library dirs and the libs to link with.
     flags = string.split(output)
-    flags = uniq_arr(flags) # remove repeated values.
+    flags = uniq_arr(flags) # Remove repeated values.
     inc_dirs = []
     lib_dirs = []
     libs = []
@@ -158,30 +146,16 @@ def get_mpi_flags():
             'def_macros': def_macros, 'undef_macros': undef_macros}
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     setup_compiler()
     
     mpi_flags = get_mpi_flags()
     mpi_flags['inc_dirs'].append(numpy.get_include())
 
 
-    # setting some extra compile flags for 64 bit architectures, utilizing
-    # distutils.sysconfig to check which compiler to use
     if os.name == 'posix' and os.uname()[4] == 'x86_64':
-        #Extra flags for 64 bit architectures    
+        # Extra flags for 64 bit architectures    
         extra_compile_args = ['-fPIC']
-        
-
-        # NOTE: I think these compiler specific flags are 
-        # obsolete (Ole Nielsen, Feb 2009)
-        #if 'pgcc' in distutils.sysconfig.get_config_var('CC'):
-        #    extra_compile_args = [' -fPIC -tp amd64'] #Valid for pgcc
-        #elif 'gcc' in distutils.sysconfig.get_config_var('CC'):
-        #    extra_compile_args = [' -fPIC -m64'] #Valid for gcc
-        #elif 'icc' in distutils.sysconfig.get_config_var('CC'):
-        #    extra_compile_args = [' -fPIC'] #Valid for icc
-        #else:
-        #    extra_compile_args = None
     else:
         extra_compile_args = None
 
