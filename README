@@ -242,6 +242,9 @@ DOCUMENTATION
 
   
 HISTORY
+
+See release_notes.txt for newer releases
+
 version 2.0.1_alpha (11/7/7) Setup patch by jk Nilsen and removal 
 of obsolete code
 version 2.0alpha (3/7/7) Migration to numpy and patches to setup
