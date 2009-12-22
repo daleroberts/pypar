@@ -121,7 +121,7 @@ MPI_Datatype type_map(PyArrayObject *x, int *count) {
 	    "Array must be of type int or float. I got py_type == %d", 
 	    py_type);
     PyErr_SetString(PyExc_ValueError, err_msg);
-    return NULL;
+    return (MPI_Datatype) NULL;
   }      
 
   //printf("Types: py_type=%d, mpi_type=%d\n", py_type, (int) mpi_type);
@@ -162,7 +162,7 @@ MPI_Op op_map(int py_op) {
   /*  mpi_op = MPI_REPLACE; */ 
   else {
     PyErr_SetString(PyExc_ValueError, "Operation unknown");
-    return NULL;
+    return (MPI_Op) NULL;
   }      
   
   return mpi_op;

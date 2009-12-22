@@ -908,7 +908,7 @@ if numproc > 1:
            %(status.size, sz)
     assert status.tag == pypar.default_tag, 'Reported tag == %d should be %d'\
            %(status.tag, pypar.default_tag)
-    assert status.error == 0
+    assert status.error == 0, 'Status.error = %i' % status.error
     assert status.source == numproc-1, 'Reported source == %d should be %d'\
            %(status.source, numproc-1)
 

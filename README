@@ -60,6 +60,8 @@ PRE-REQUISITES (on all nodes)
   Native C compiler
   
   Pypar has been tested on the following platforms
+    OPENMPI with Linux on Opteron 64 bit
+    OPENMPI with Ubuntu Linux (32 bit)  
     MPI on DEC Alpha
     LAM/MPI (6.5.6, 7.0) on Linux (Debian Woody/Cid and Red Hat 7.1) 
     MPICH and LAM 7.0 on Solaris (Sun Enterprise)
@@ -67,12 +69,10 @@ PRE-REQUISITES (on all nodes)
     MPICH on Windows (NT/2000)
     MPICH for Darwin (Mac OS)
     LAM/MPI with Linux on Opteron 64 bit
-    OPENMPI with Linux on Opteron 64 bit
-    OPENMPI with Ubuntu Linux (32 bit)
 
-   
-  On Ubuntu systems you need to install the following packages:
-  apt-get install openmpi
+  There are currently issues with MPICH2, so we recommend using OPENMPI  
+  On Ubuntu systems you need to install the following 2 packages:
+  apt-get install openmpi-bin
   apt-get install libopenmpi-dev
    
   
