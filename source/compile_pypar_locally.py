@@ -41,7 +41,9 @@ try:
   import compile
   compile.compile('mpiext.c', MPICC, verbose = 1)
 except Exception, e:
-  raise "Could not compile C extension mpiext.c - please try manually: %s" %e       
+  msg = 'Could not compile C extension mpiext.c - please try manually: %s' % e
+  raise Exception(msg)
+       
 
 
 if sys.platform in ['osf1V5', 'sunos5']:  #Compaq AlphaServer or Sun
@@ -55,8 +57,9 @@ if sys.platform in ['osf1V5', 'sunos5']:  #Compaq AlphaServer or Sun
 
 error = os.system('python -c "import mpiext" > /dev/null') 
 if error:
-  raise "MPI could not be initialised."
+  msg = 'MPI could not be initialised.'
+  raise Exception(msg)
 else:  
   import mpiext
-  print "MPI initialised OK"    
+  print 'MPI initialised OK'    
 

@@ -137,12 +137,14 @@ def compile(FNs=None, CC=None, LD = None, SFLAG = None, verbose = 1):
     if ext == '':
       FN = FN + '.c'
     elif ext.lower() != '.c':
-      raise Exception, "Unrecognised extension: " + FN
+      msg = 'Unrecognised extension: ' + FN
+      raise Exception(msg)
     
     try:
       open(FN,'r')
     except:    
-      raise Exception, "Could not open: " + FN
+      msg = 'Could not open: ' + FN
+      raise Exception(msg) 
 
     if not object_files: root1 = root  # Remember first filename        
     object_files += root + '.o '  
@@ -150,7 +152,7 @@ def compile(FNs=None, CC=None, LD = None, SFLAG = None, verbose = 1):
   
     # Compile
     #
-    s = "%s -c %s -I%s -I%s -o %s.o -Wall" % (compiler, FN,
+    s = '%s -c %s -I%s -I%s -o %s.o -Wall' % (compiler, FN,
                                               python_include, numpy_include,
                                               root)
     if os.name == 'posix' and os.uname()[4] == 'x86_64':
@@ -170,7 +172,7 @@ def compile(FNs=None, CC=None, LD = None, SFLAG = None, verbose = 1):
 
   
   # Make shared library (*.so)
-  s = "%s -%s %s -o %s.so" %(loader, sharedflag, object_files, root1)
+  s = '%s -%s %s -o %s.so' % (loader, sharedflag, object_files, root1)
 
   if os.name == 'posix' and os.uname()[4] == 'x86_64':
       # Extra flags for 64 bit architectures using Portland compilers
