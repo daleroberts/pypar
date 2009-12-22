@@ -1,4 +1,6 @@
-Release notes from version 87 to 93 (v 2.1.4):
+Version 95: Moved to Google Code (22 Dec 2009)
+
+Release notes from version 87 to 94 (v 2.1.4):
 
 Got setup.py to work again for MPICH2
 
