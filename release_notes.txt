@@ -1,4 +1,4 @@
-Release notes from version 87 to 91 (v 2.1.3):
+Release notes from version 87 to 93 (v 2.1.4):
 
 Got setup.py to work again for MPICH2
 
