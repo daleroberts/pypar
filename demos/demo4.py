@@ -1,8 +1,8 @@
 #########################################################
-#   
+#
 #  Example: Running Python in parallel using pypar (MPI).
-#   
-#  Author:  Ole Nielsen,  SMS, ANU, Jan. 2002. 
+#
+#  Author:  Ole Nielsen,  SMS, ANU, Jan. 2002.
 #
 #########################################################
 #
@@ -19,8 +19,8 @@
 #   mpirun -np 4 demo.py
 
 
-import pypar    # The Python-MPI interface 
-import Numeric
+import pypar    # The Python-MPI interface
+import numpy
 typ = 'd'  #'i', 'l', 'f', 'd'
 
 numproc = pypar.size()
@@ -30,12 +30,12 @@ node =    pypar.Get_processor_name()
 print "I am proc %d of %d on node %s" %(myid, numproc, node)
 
 if numproc < 2:
-  print "Demo must run on at least 2 processors to continue"      
+  print "Demo must run on at least 2 processors to continue"
   pypar.abort()
-  
+
 if myid == 0:
-  msg = Numeric.array([0], typ)  
-  
+  msg = numpy.array([0], typ)
+
   print 'Processor 0 sending message "%s" to processor %d' %(str(msg), 1)
   pypar.send(msg, 1)
 
@@ -46,16 +46,16 @@ if myid == 0:
 else:
   source = myid-1
   destination = (myid+1)%numproc
-  
+
   msg, status = pypar.receive(source, return_status=True)
   print 'Processor %d received message "%s" from processor %d'\
         %(myid, str(msg), source)
-  print 'Size of msg was %d bytes' %(status.bytes())  
+  print 'Size of msg was %d bytes' %(status.bytes())
 
   msg = list(msg)
   msg.append(myid)
   print msg
-  msg = Numeric.array(msg, typ)  #Update message     
+  msg = numpy.array(msg, typ)  #Update message
   print 'Processor %d sending msg "%s" to %d' %(myid, msg, destination)
   pypar.send(msg, destination)
 

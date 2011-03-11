@@ -12,7 +12,7 @@
 # FIXME: Now mpiext.c and pypar.py are assumed to be in this directory.
 # Maybe, we should put them in the default package directory, pypar.
 # The repository structure would then be
-# 
+#
 # pypar
 #     demos
 #     documentation
@@ -35,17 +35,18 @@ import popen2 # FIXME: Replace with subprocess - http://docs.python.org/library/
 import string
 import tempfile
 import numpy
+import shlex
 from __metadata__ import __version__, __date__, __author__
 
 
 def setup_compiler():
     distutils.sysconfig.get_config_vars()
     config_vars = distutils.sysconfig._config_vars
-    
+
     if sys.platform == 'sunos5':
         config_vars['LDSHARED'] = 'gcc -G'
         config_vars['CCSHARED'] = ''
-        
+
 
 def uniq_arr(arr):
     """Remove repeated values from an array and return new array."""
@@ -63,6 +64,7 @@ def _run_command(cmd):
     in_file.close()
     err_file.close()
     # need this hack to get the exit status
+    print 'running ' + cmd
     out_file = os.popen(cmd)
     if out_file.close():
         # close returns exit status of command.
@@ -116,6 +118,9 @@ def get_mpi_flags():
 
             #"MPICH_DIR" must be set manually in environment variables
             mpi_dir = os.getenv("MPICH_DIR")
+            if mpi_dir == None:
+            	print 'MPICH_DIR environment variable must be set'
+            	exit()
 
             #for MPICH2
             sdk_prefix = mpi_dir
@@ -125,13 +130,14 @@ def get_mpi_flags():
             if os.path.exists(sdk_prefix + '\\SDK'):
                 sdk_prefix += '\\SDK'
                 lib_name = 'mpich'
-            output = 'gcc -L%(sdk_prefix)s\lib -l%(lib_name)s -I%(sdk_prefix)s\include' % {'sdk_prefix' : sdk_prefix, 'lib_name' : lib_name}
+            output = 'gcc -L"%(sdk_prefix)s\lib" -l"%(lib_name)s" -I"%(sdk_prefix)s\include"' % {'sdk_prefix' : sdk_prefix, 'lib_name' : lib_name}
         else:
             output = 'cc -L/usr/opt/mpi -lmpi -lelan'
 
 
     # Now get the include, library dirs and the libs to link with.
-    flags = string.split(output)
+    #flags = string.split(output)
+    flags = shlex.split(output)
     flags = uniq_arr(flags) # Remove repeated values.
     inc_dirs = []
     lib_dirs = []
@@ -159,7 +165,7 @@ def get_mpi_flags():
 
 if __name__ == '__main__':
     setup_compiler()
-    
+
     mpi_flags = get_mpi_flags()
     mpi_flags['inc_dirs'].append(numpy.get_include())
 
@@ -167,7 +173,7 @@ if __name__ == '__main__':
     # setting some extra compile flags for 64 bit architectures, utilizing
     # distutils.sysconfig to check which compiler to use
     if os.name == 'posix' and os.uname()[4] == 'x86_64':
-        #Extra flags for 64 bit architectures    
+        #Extra flags for 64 bit architectures
         extra_compile_args = ['-fPIC']
     else:
         extra_compile_args = None
@@ -181,10 +187,10 @@ if __name__ == '__main__':
           author=__author__,
           author_email='ole.moller.nielsen@gmail.com',
           url='http://sourceforge.net/projects/pypar',
-          package_dir = {'pypar': ''}, # Use files in this dirctory 
+          package_dir = {'pypar': ''}, # Use files in this dirctory
           packages  = ['pypar'],
           ext_modules = [Extension('pypar.mpiext',
-                                   ['mpiext.c'], 
+                                   ['mpiext.c'],
                                    include_dirs=mpi_flags['inc_dirs'],
                                    library_dirs=mpi_flags['lib_dirs'],
                                    libraries=mpi_flags['libs'],
