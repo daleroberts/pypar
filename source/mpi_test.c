@@ -1,6 +1,10 @@
 /*
   Simple MPI communication test.
   Ole Moller Nielsen - 2011
+
+  To compile
+  mpicc mpi_test.c -lmpi -Wall
+
 */
 
 #include <stdio.h>
