@@ -8,7 +8,7 @@
 #include <mpi.h>
 
 
-#define M  500000     /* Data size */
+#define M  5000     /* Data size */
 
 
 int main(int argc, char **argv) {
@@ -59,6 +59,7 @@ int main(int argc, char **argv) {
      if (myid == 0) {
 	 printf("P%i: Sending to P%i\n", myid, 1);
          MPI_Send(&A[0], M, MPI_DOUBLE, 1, msgid, MPI_COMM_WORLD);
+	 printf("P%i: Waiting to receive from P%i\n", myid, procs-1);
          MPI_Recv(&A[0], M, MPI_DOUBLE, procs-1, msgid, MPI_COMM_WORLD, &stat);
 	 printf("P%i: Received from to P%i\n", myid, procs-1);
        } else {
