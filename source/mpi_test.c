@@ -5,6 +5,11 @@
   To compile
   mpicc mpi_test.c -lmpi -Wall
 
+  To run on one node
+  mpirun --hostfile /etc/mpihosts -host node5 -npernode 2 a.out
+
+  To run on multiple nodes
+  mpirun --hostfile /etc/mpihosts -host node5,node10 -npernode 1 a.out
 */
 
 #include <stdio.h>
