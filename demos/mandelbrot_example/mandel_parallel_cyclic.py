@@ -26,10 +26,10 @@ P = pypar.size()
 p = pypar.rank()
 processor_name = pypar.get_processor_name()
 
-print 'Processor %d initialised on node %s' %(p,processor_name)
+print 'Processor %d initialised on node %s' %(p, processor_name)
 
 
-# Parallel computation 
+# Parallel computation
 A = calculate_region_cyclic(real_min, real_max, imag_min,
                             imag_max, kmax,
                             M, N, p, P)
@@ -40,18 +40,21 @@ print 'Processor %d: time = %.2f' %(p, pypar.time() - t)
 # Communication phase
 if p == 0:
     for d in range(1, P):
+        print 'Proc 0 receiving from %i' % d
         A += pypar.receive(source=d)
+        print 'Received from %i' % d
 
-    print 'Computed region in %.2f seconds' %(pypar.time()-t)
+    print 'Computed region in %.2f seconds' %(pypar.time() - t)
     try:
         plot(A, kmax)
     except:
         pass
-    
+
 else:
+    print 'Sending to 0'
     pypar.send(A, destination=0)
 
-pypar.finalize()                
+pypar.finalize()
 
 
 
