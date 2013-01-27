@@ -163,7 +163,7 @@ if __name__ == '__main__':
 
     #-----------------------------
     # Copy README file to top dir
-    s = 'cp %s/source/README %s' %(distro_dir, distro_dir)
+    s = 'cp %s/README %s' %(distro_dir, distro_dir)
     print s
     system(s)
 
