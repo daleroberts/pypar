@@ -162,8 +162,9 @@ if __name__ == '__main__':
     system(s)
 
     #-----------------------------
-    # Copy README file to top dir
-    s = 'cp %s/README %s' %(distro_dir, distro_dir)
+    # Get README file
+    s = 'svn export -r %d README %s/README' %(svn_revision,
+                                              distro_dir)
     print s
     system(s)
 
@@ -211,50 +212,6 @@ if __name__ == '__main__':
     print lsep
     print
     print
-
-    answer = raw_input('Do you want to upload this to sourceforge? Y/N [Y]')
-    if answer.lower() != 'n':
-
-        #------------------------------
-        print 'Uploading to sourceforge'
-
-
-        import os, os.path
-        release_dir = os.path.expanduser(release_dir)
-        os.chdir(release_dir)
-        print 'Reading from', os.getcwd()
-
-        s = 'rsync -avP -e ssh *.tgz uniomni@frs.sourceforge.net:uploads/'
-        print s
-        os.system(s)
-
-        #from ftplib import FTP
-        #ftp = FTP('upload.sourceforge.net')
-        #print ftp.login() # Anonymous
-        #print ftp.cwd('incoming')
-        #
-        #for filename in os.listdir('.'):
-        #    print 'Uploading %s... ' %filename,
-        #    stdout.flush()
-        #
-        #    fid=open(filename, 'rb')
-        #    print ftp.storbinary('STOR %s' %filename, fid)
-        #    fid.close()
-        #
-        #print 'FTP done'
-        #print ftp.quit()
-
-        print
-        print lsep
-        print '    ********************* NOTE *************************'
-        print lsep
-        print 'To complete this release you must log into'
-        print 'http://sourceforge.net/projects/pypar as admin'
-        print 'and complete the process by selecting File Releases '
-        print 'in the admin menu there.'
-        print lsep
-        print
-        print
 
 
 
