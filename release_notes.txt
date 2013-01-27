@@ -1,6 +1,12 @@
-Version 95: Moved to Google Code (22 Dec 2009)
+Release notes from version 95 to 105 (v 2.1.5):
 
-Release notes from version 87 to 94 (v 2.1.4):
+A number of small improvements - mainly to do with docs,
+error messages and workflows.
+
+
+Release notes from version 87 to 95 (v 2.1.4):
+
+Version 95: Moved to Google Code (22 Dec 2009)
 
 Got setup.py to work again for MPICH2
 
@@ -20,10 +26,10 @@ Added compilation patch suggested by Michael McKerns
 Release structure suggested by Red Hat
 
 
-Release notes from version 36 to 49:	
+Release notes from version 36 to 49:
 
 Implemented race-condition patch from Jim Bosch
 Functionality and demo for Bsend by C Makassikis
-Deprecated obsolete functions 
+Deprecated obsolete functions
 Migrated Mandelbrot demos to numpy
 Fixed demo3.py for version 2 thanks to Felix Richter
