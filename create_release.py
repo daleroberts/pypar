@@ -36,7 +36,7 @@ def get_revision_number():
     msg += 'by using the command: "svn info".\n'
     msg += 'In this case, make sure svn is accessible on the system path. '
     msg += 'Simply aliasing svn to the binary will not work. '
-      
+
     try:
         # The null stuff is so this section fails quitly.
         # This could cause the svn info command to fail due to
@@ -46,22 +46,22 @@ def get_revision_number():
             system('svn up')
             fid = popen('svn info 2> null')
         else:
-            system('svn up')            
+            system('svn up')
             fid = popen('svn info 2>/dev/null')
-	
+
     except:
         raise Exception(msg)
     else:
-        #print 'Got version from svn'            
+        #print 'Got version from svn'
         version_info = fid.read()
-      
+
         if version_info == '':
-          raise Exception(msg)    
+          raise Exception(msg)
         else:
           pass
           print 'Got version from file'
 
-            
+
     for line in version_info.split('\n'):
         if line.startswith('Revision:'):
             break
@@ -69,21 +69,21 @@ def get_revision_number():
     fields = line.split(':')
     msg = 'Keyword "Revision" was not found anywhere in text: %s'\
           %version_info
-    assert fields[0].startswith('Revision'), msg            
+    assert fields[0].startswith('Revision'), msg
 
     try:
         revision_number = int(fields[1])
     except:
         msg = 'Revision number must be an integer. I got %s' %fields[1]
-        msg += 'Check that the command svn is on the system path' 
-        raise Exception(msg)                
-        
+        msg += 'Check that the command svn is on the system path'
+        raise Exception(msg)
+
     return revision_number
 
 
 
 if __name__ == '__main__':
-  
+
     if platform == 'win32':
         msg = 'This script is not written for Windows.'+\
               'Please run it on a Unix platform'
@@ -101,13 +101,13 @@ if __name__ == '__main__':
         if line.startswith('__version__'):
             i = line.find('=')
             major_revision = str(line[i+1:].strip())[1:-1]
-            
+
     if major_revision is None:
         raise 'No version was found'
 
-    
 
-    # line separator 
+
+    # line separator
     lsep = '----------------------------------------------------------------------'
 
     # Get svn revision number and create
@@ -121,14 +121,14 @@ if __name__ == '__main__':
 
     distro_filename = 'pypar-%s.tgz' %revision
 
-    
-    
+
+
     # Create area directory
-    release_name = 'pypar_%s' %revision 
-    release_dir = '~/%s' %release_name 
+    release_name = 'pypar_%s' %revision
+    release_dir = '~/%s' %release_name
     s = 'mkdir %s' %release_dir
     try:
-        print s    
+        print s
         system(s)
     except:
         pass
@@ -137,46 +137,51 @@ if __name__ == '__main__':
     # Export a clean directory tree from the working copy to a temporary dir
     tmp_dir = mktemp()
     s = 'mkdir %s' %tmp_dir
-    print s    
+    print s
     system(s)
-    
-    distro_dir = join(tmp_dir, release_name) 
-    s = 'mkdir %s' %distro_dir
-    print s    
-    system(s)    
 
-    
-    
+    distro_dir = join(tmp_dir, release_name)
+    s = 'mkdir %s' %distro_dir
+    print s
+    system(s)
+
+
+
 
     #-----------------------------
     # Get pypar source
     s = 'svn export -r %d source %s/source' %(svn_revision,
-                                              distro_dir) 
-    print s
-    system(s)
-    
-    #-----------------------------
-    # Copy license file to top dir   
-    s = 'cp %s/source/LICENSE %s' %(distro_dir, distro_dir)     
-    print s
-    system(s)    
-   
-    
-    #-----------------------------
-    # Get demos
-    s = 'svn export -r %d demos %s/demos' %(svn_revision,
-                                            distro_dir) 
+                                              distro_dir)
     print s
     system(s)
 
-    
+    #-----------------------------
+    # Copy license file to top dir
+    s = 'cp %s/source/LICENSE %s' %(distro_dir, distro_dir)
+    print s
+    system(s)
+
+    #-----------------------------
+    # Copy README file to top dir
+    s = 'cp %s/source/README %s' %(distro_dir, distro_dir)
+    print s
+    system(s)
+
+    #-----------------------------
+    # Get demos
+    s = 'svn export -r %d demos %s/demos' %(svn_revision,
+                                            distro_dir)
+    print s
+    system(s)
+
+
     #-----------------------------
     # Get documentation
     s = 'svn export -r %d documentation %s/documentation' %(svn_revision,
-                                                            distro_dir) 
+                                                            distro_dir)
     print s
     system(s)
-    
+
 
 
     # Zip everything up
@@ -185,12 +190,12 @@ if __name__ == '__main__':
     system(s)
 
     # Move distro to release area
-    s = '/bin/mv %s/*.tgz %s' %(tmp_dir, release_dir) 
+    s = '/bin/mv %s/*.tgz %s' %(tmp_dir, release_dir)
     print s
     system(s)
 
     # Clean up
-    s = '/bin/rm -rf %s/pypar' %(tmp_dir) 
+    s = '/bin/rm -rf %s/pypar' %(tmp_dir)
     print s
     system(s)
 
@@ -209,7 +214,7 @@ if __name__ == '__main__':
 
     answer = raw_input('Do you want to upload this to sourceforge? Y/N [Y]')
     if answer.lower() != 'n':
-        
+
         #------------------------------
         print 'Uploading to sourceforge'
 
@@ -250,7 +255,7 @@ if __name__ == '__main__':
         print lsep
         print
         print
-        
+
 
 
 
