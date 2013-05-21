@@ -36,7 +36,7 @@ import string
 import tempfile
 import numpy
 import shlex
-from __metadata__ import __version__, __date__, __author__
+from src.__metadata__ import __version__, __date__, __author__
 
 
 def setup_compiler():
@@ -187,10 +187,10 @@ if __name__ == '__main__':
           author=__author__,
           author_email='ole.moller.nielsen@gmail.com',
           url='http://sourceforge.net/projects/pypar',
-          package_dir = {'pypar': ''}, # Use files in this dirctory
+          package_dir = {'pypar': 'src'},
           packages  = ['pypar'],
           ext_modules = [Extension('pypar.mpiext',
-                                   ['mpiext.c'],
+                                   ['src/mpiext.c'],
                                    include_dirs=mpi_flags['inc_dirs'],
                                    library_dirs=mpi_flags['lib_dirs'],
                                    libraries=mpi_flags['libs'],
