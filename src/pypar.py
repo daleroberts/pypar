@@ -217,7 +217,7 @@ def receive(source, buffer=None, vanilla=False, tag=default_tag,
         return buffer
 
 
-def broadcast(buffer, root, vanilla=False, bypass=False):
+def broadcast(buffer, root=0, vanilla=False, bypass=False):
     """Wrapper for MPI bcast.
 
        Broadcast buffer from the process with rank root to all other processes.
@@ -272,7 +272,7 @@ def broadcast(buffer, root, vanilla=False, bypass=False):
     return buffer
 
 
-def scatter(x, root, buffer=None, vanilla=False):
+def scatter(x, root=0, buffer=None, vanilla=False):
     """Sends data x from process with rank root to all other processes.
 
        Create appropriate buffer and receive data.
@@ -321,7 +321,7 @@ def scatter(x, root, buffer=None, vanilla=False):
     return buffer
 
 
-def gather(x, root, buffer=None, vanilla=0):
+def gather(x, root=0, buffer=None, vanilla=0):
     """Gather values from all processes to root
 
        Create appropriate buffer and receive data.
@@ -367,7 +367,7 @@ def gather(x, root, buffer=None, vanilla=0):
     return buffer
 
 
-def reduce(x, op, root, buffer=None, vanilla=0, bypass=False):
+def reduce(x, op, root=0, buffer=None, vanilla=0, bypass=False):
     """Reduce elements in x to buffer (of the same size as x)
        at root applying operation op elementwise.
 
