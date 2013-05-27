@@ -31,6 +31,19 @@ class TestScatter(unittest.TestCase):
         self.assertTrue(np.allclose(X, data[myid*NP:(myid+1)*NP]))
         self.assertTrue(np.allclose(Y, data[myid*NP:(myid+1)*NP]))
 
+    def test_without_root(self):
+        N = 16
+        NP = N/ncpu
+        data = np.array(range(N)).astype('i')
+        X = np.zeros(NP).astype('i')
+
+        pp.scatter(data, buffer=X) # With buffer
+        Y = pp.scatter(data) # With buffer automatically created
+
+        self.assertTrue(np.allclose(X, Y))
+        self.assertTrue(np.allclose(X, data[myid*NP:(myid+1)*NP]))
+        self.assertTrue(np.allclose(Y, data[myid*NP:(myid+1)*NP]))
+
     def test_diff_master(self):
         N = 16
         NP = N/ncpu
