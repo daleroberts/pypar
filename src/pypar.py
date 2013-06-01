@@ -62,10 +62,9 @@ control_sep = ':'           # Separator for fields in control info (NOT ',')
 control_data_max_size = 64  # Maximal size of string holding control data
 
 
-#---------------------------------------------------------------------------
-# Communication functions
-#--------------------------------------------------------------------------
-
+#------------------------
+# Basic MPI communication
+#------------------------
 def send(x, destination, use_buffer=False, vanilla=False,
          tag=default_tag, bypass=False):
     """Wrapper for easy MPI send.
@@ -400,13 +399,13 @@ def reduce(x, op, root=0, buffer=None, vanilla=0, bypass=False):
 
     return buffer
 
-
-# Functions related to MPI_Bsend().
+#---------------------------------
+# Functions related to MPI_Bsend()
+#---------------------------------
 def bsend(x, destination, use_buffer=False, vanilla=False,
          tag=default_tag, bypass=False):
 
     if bypass is True:
-        #print "bsend_array() bypass True"
         bsend_array(x, destination, tag)
         return
 
@@ -428,10 +427,8 @@ def bsend(x, destination, use_buffer=False, vanilla=False,
     # Transmit payload data
     if protocol == 'array':
         bsend_array(x, destination, tag)
-        #print "bsend_array() bypass False"
     elif protocol in ['string', 'vanilla']:
         bsend_string(x, destination, tag)
-        #print "bsend_string()"
     else:
         raise 'Unknown protocol: %s' % protocol
 
@@ -478,7 +475,7 @@ def detach():
 
 
 #---------------------------------------------------------
-# AUXILIARY FUNCTIONS
+# Auxiliary functions
 #---------------------------------------------------------
 def balance(N, P, p):
     """Compute p'th interval when N is distributed over P bins.
@@ -537,7 +534,9 @@ def balance(N, P, p):
     return Nlo, Nhi
 
 
+#---------------------------------------
 # Obsolete functions - should be deleted
+#---------------------------------------
 from warnings import warn
 
 
@@ -555,9 +554,8 @@ def Get_processor_name():
 
 
 #---------------------------------------------------------
-# INTERNAL FUNCTIONS
+# Pypar specific functionality
 #---------------------------------------------------------
-
 class Status:
     """ MPI Status block returned by receive if
         specified with parameter return_status=True
@@ -654,7 +652,6 @@ def create_control_info(x, vanilla=0, return_object=False):
         return [protocol, typecode, size, shape]
 
 
-#----------------------------------------------
 def send_control_info(control_info, destination):
     """Send control info to destination
     """
