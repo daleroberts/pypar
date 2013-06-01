@@ -47,16 +47,19 @@ See doc strings of individual functions for detailed documentation.
 
 from numpy import zeros, reshape, product
 from __metadata__ import __version__, __date__, __author__
+import types
+import string
 
-
+#----------
 # Constants
-#
+#----------
+
 max_tag = 32767      # Max tag value (MPI_TAG_UB didn't work and returned 0)
 control_tag = 13849  # Reserved tag used to identify control information
 default_tag = 1      # Tag used as default if not specified
 
-control_sep = ':'          # Separator for fields in control info (NOT ',')
-control_data_max_size = 64 # Maximal size of string holding control data
+control_sep = ':'           # Separator for fields in control info (NOT ',')
+control_data_max_size = 64  # Maximal size of string holding control data
 
 
 #---------------------------------------------------------------------------
@@ -87,7 +90,6 @@ def send(x, destination, use_buffer=False, vanilla=False,
        with a bypass in the corresponding receive command.
 
     """
-    import types, string
 
     if bypass:
         send_array(x, destination, tag)
@@ -104,11 +106,9 @@ def send(x, destination, use_buffer=False, vanilla=False,
     control_info, x = create_control_info(x, vanilla, return_object=True)
     protocol = control_info[0]
 
-
     # Possibly transmit control data
     if use_buffer is False:
         send_control_info(control_info, destination)
-
 
     # Transmit payload data
     if protocol == 'array':
@@ -116,7 +116,7 @@ def send(x, destination, use_buffer=False, vanilla=False,
     elif protocol in ['string', 'vanilla']:
         send_string(x, destination, tag)
     else:
-        raise 'Unknown protocol: %s' %protocol
+        raise 'Unknown protocol: %s' % protocol
 
 
 def receive(source, buffer=None, vanilla=False, tag=default_tag,
@@ -158,17 +158,13 @@ def receive(source, buffer=None, vanilla=False, tag=default_tag,
         # assert buffer is not None, msg
         stat = receive_array(buffer, source, tag)
     else:
-
-        import types
-
         # Input check
-        errmsg = 'Source id (%s) must be an integer.' %source
+        errmsg = 'Source id (%s) must be an integer.' % source
         assert type(source) == types.IntType, errmsg
 
         errmsg = 'Tag %d is reserved by pypar - please use another.'\
             % control_tag
         assert tag != control_tag, errmsg
-
 
         # Either receive or create metadata about object to receive
         if buffer is None:
@@ -179,36 +175,35 @@ def receive(source, buffer=None, vanilla=False, tag=default_tag,
             protocol, typecode, size, shape = create_control_info(buffer,
                                                                   vanilla)
 
-
         # Receive payload data
         if protocol == 'array':
             if buffer is None:
-                buffer = zeros(size,typecode)
+                buffer = zeros(size, typecode)
                 buffer = reshape(buffer, shape)
 
             stat = receive_array(buffer, source, tag)
 
         elif protocol == 'string':
             if buffer is None:
-                buffer = ' '*size
+                buffer = ' ' * size
 
             stat = receive_string(buffer, source, tag)
 
         elif protocol == 'vanilla':
             from cPickle import dumps, loads, UnpicklingError
             if buffer is None:
-                s = ' '*size
+                s = ' ' * size
             else:
                 s = dumps(buffer, protocol=2)
-                s = s + ' '*int(0.1*len(s)) #safety
+                s = s + ' ' * int(0.1 * len(s))  # Safety margin
 
             stat = receive_string(s, source, tag)
             try:
-                buffer = loads(s)   #Replace buffer with received result
+                buffer = loads(s)  # Replace buffer with received result
             except UnpicklingError, err:
                 raise UnpicklingError(str(err) + " - '%s'" % s)
         else:
-            raise 'Unknown protocol: %s' %protocol
+            raise 'Unknown protocol: %s' % protocol
 
     # Return received data and possibly the status object
     if return_status:
@@ -239,17 +234,12 @@ def broadcast(buffer, root=0, vanilla=False, bypass=False):
         broadcast_array(buffer, root)
         return
 
-
-    import types
-
     # Input check
-    errmsg = 'Root id (%s) must be an integer.' %root
+    errmsg = 'Root id (%s) must be an integer.' % root
     assert type(root) == types.IntType, errmsg
-
 
     # Create metadata about object to be sent
     protocol = create_control_info(buffer, vanilla)[0]
-
 
     # Broadcast
     if protocol == 'array':
@@ -259,7 +249,7 @@ def broadcast(buffer, root=0, vanilla=False, bypass=False):
     elif protocol == 'vanilla':
         from cPickle import loads, dumps, UnpicklingError
         s = dumps(buffer, protocol=2)
-        s = s + ' '*int(0.1*len(s)) #safety
+        s = s + ' ' * int(0.1 * len(s))  # Safety margin
 
         broadcast_string(s, root)
         try:
@@ -267,7 +257,7 @@ def broadcast(buffer, root=0, vanilla=False, bypass=False):
         except UnpicklingError, err:
             raise UnpicklingError(str(err) + " - '%s'" % s)
     else:
-        raise 'Unknown protocol: %s' %protocol
+        raise 'Unknown protocol: %s' % protocol
 
     return buffer
 
@@ -281,14 +271,12 @@ def scatter(x, root=0, buffer=None, vanilla=False):
        Scatter makes only sense for arrays or strings
     """
 
-    import types
     from mpiext import size
-    numproc = size()         # Needed to determine buffer size
+    numproc = size()  # Needed to determine buffer size
 
     # Input check
-    errmsg = 'Root id (%s) must be an integer.' %root
+    errmsg = 'Root id (%s) must be an integer.' % root
     assert type(root) == types.IntType, errmsg
-
 
     # Create metadata about object to be sent
     protocol, typecode, size, shape = create_control_info(x)
@@ -307,7 +295,7 @@ def scatter(x, root=0, buffer=None, vanilla=False):
         scatter_array(x, buffer, root)
     elif protocol == 'string':
         if buffer is None:
-            buffer = ' '*(size/numproc)
+            buffer = ' ' * (size / numproc)
 
         scatter_string(x, buffer, root)
     elif protocol == 'vanilla':
@@ -316,7 +304,7 @@ def scatter(x, root=0, buffer=None, vanilla=False):
         errmsg += 'please use send and receive commands or broadcast.'
         raise errmsg
     else:
-        raise 'Unknown protocol: %s' %protocol
+        raise 'Unknown protocol: %s' % protocol
 
     return buffer
 
@@ -329,12 +317,11 @@ def gather(x, root=0, buffer=None, vanilla=0):
        Gather only makes sens for arrays or strings
     """
 
-    import types
     from mpiext import size
-    numproc = size()         #Needed to determine buffer size
+    numproc = size()  # Needed to determine buffer size
 
     # Input check
-    errmsg = 'Root id (%s) must be an integer.' %root
+    errmsg = 'Root id (%s) must be an integer.' % root
     assert type(root) == types.IntType, errmsg
 
     # Create metadata about object to be gathered
@@ -343,7 +330,7 @@ def gather(x, root=0, buffer=None, vanilla=0):
     # Gather
     if protocol == 'array':
         if buffer is None:
-            buffer = zeros(size*numproc, typecode)
+            buffer = zeros(size * numproc, typecode)
 
             # Modify shape along axis=0 to match size
             shape = list(shape)
@@ -353,7 +340,7 @@ def gather(x, root=0, buffer=None, vanilla=0):
         gather_array(x, buffer, root)
     elif protocol == 'string':
         if buffer is None:
-            buffer = ' '*size*numproc
+            buffer = ' ' * size * numproc
 
         gather_string(x, buffer, root)
     elif protocol == 'vanilla':
@@ -362,7 +349,7 @@ def gather(x, root=0, buffer=None, vanilla=0):
         errmsg += 'please use send and receive commands or broadcast.'
         raise errmsg
     else:
-        raise 'Unknown protocol: %s' %protocol
+        raise 'Unknown protocol: %s' % protocol
 
     return buffer
 
@@ -380,11 +367,8 @@ def reduce(x, op, root=0, buffer=None, vanilla=0, bypass=False):
         reduce_array(x, buffer, op, root)
         return
 
-
-    import types
     from mpiext import size
     numproc = size()         # Needed to determine buffer size
-
 
     # Input check
     errmsg = 'Root id (%s) must be an integer.' % root
@@ -396,20 +380,18 @@ def reduce(x, op, root=0, buffer=None, vanilla=0, bypass=False):
     # Reduce
     if protocol == 'array':
         if buffer is None:
-            buffer = zeros(size*numproc, typecode)
+            buffer = zeros(size * numproc, typecode)
 
             # Modify shape along axis=0 to match size
             shape = list(shape)
             shape[0] *= numproc
             buffer = reshape(buffer, shape)
 
-
         msg = 'Data array and buffer must have same type '
         msg = 'in reduce. I got types "%s" and "%s"' % (x.dtype.char,
                                                         buffer.dtype.char)
         assert x.dtype.char == buffer.dtype.char, msg
         reduce_array(x, buffer, op, root)
-
 
     elif (protocol == 'vanilla' or protocol == 'string'):
         raise 'Protocol: %s unsupported for reduce' % protocol
@@ -418,10 +400,8 @@ def reduce(x, op, root=0, buffer=None, vanilla=0, bypass=False):
 
     return buffer
 
-#
-# Functions related to MPI_Bsend().
-#
 
+# Functions related to MPI_Bsend().
 def bsend(x, destination, use_buffer=False, vanilla=False,
          tag=default_tag, bypass=False):
 
@@ -429,8 +409,6 @@ def bsend(x, destination, use_buffer=False, vanilla=False,
         #print "bsend_array() bypass True"
         bsend_array(x, destination, tag)
         return
-
-    import types, string
 
     # Input check.
     errmsg = 'Destination id (%s) must be an integer.' % destination
@@ -445,7 +423,7 @@ def bsend(x, destination, use_buffer=False, vanilla=False,
 
     # Possibly transmit control data
     if use_buffer is False:
-       send_control_info(control_info, destination)
+        send_control_info(control_info, destination)
 
     # Transmit payload data
     if protocol == 'array':
@@ -455,7 +433,8 @@ def bsend(x, destination, use_buffer=False, vanilla=False,
         bsend_string(x, destination, tag)
         #print "bsend_string()"
     else:
-        raise 'Unknown protocol: %s' %protocol
+        raise 'Unknown protocol: %s' % protocol
+
 
 def push_for_alloc(x, vanilla=False, use_buffer=False, bypass=False):
     if bypass is True:
@@ -465,7 +444,7 @@ def push_for_alloc(x, vanilla=False, use_buffer=False, bypass=False):
         control_info, x = create_control_info(x, vanilla, return_object=True)
         protocol = control_info[0]
 
-		# According to protocol, use appropriate function.
+        # According to protocol, use appropriate function.
         if protocol == 'array':
             return array_push_for_alloc_and_attach(x)
         elif protocol in ['string', 'vanilla']:
@@ -473,20 +452,26 @@ def push_for_alloc(x, vanilla=False, use_buffer=False, bypass=False):
         else:
             raise 'Unknown protocol: %s' % protocol
 
+
 def alloc_and_attach():
     mpi_alloc_and_attach()
+
 
 def detach_and_dealloc():
     mpi_detach_and_dealloc()
 
+
 def alloc(nbytes=-1):
     return mpi_alloc(nbytes)
+
 
 def dealloc():
     mpi_dealloc()
 
+
 def attach():
     mpi_attach()
+
 
 def detach():
     mpi_detach()
@@ -540,24 +525,27 @@ def balance(N, P, p):
 
     from math import floor
 
-    L = int(floor(float(N)/P))
-    K = N - P*L
+    L = int(floor(float(N) / P))
+    K = N - P * L
     if p < K:
-        Nlo = p*L + p
+        Nlo = p * L + p
         Nhi = Nlo + L + 1
     else:
-        Nlo = p*L + K
+        Nlo = p * L + K
         Nhi = Nlo + L
 
     return Nlo, Nhi
 
 
-# Obsolete functions
+# Obsolete functions - should be deleted
 from warnings import warn
+
+
 def Wtime():
     msg = 'pypar.Wtime will become obsolete soon. Please use pypar.time'
     warn(msg)
     return time()
+
 
 def Get_processor_name():
     msg = 'pypar.Get_processor_name will become obsolete soon.'
@@ -583,13 +571,14 @@ class Status:
         self.size = status_tuple[4]    # Size of one element
 
     def __repr__(self):
-        return 'Pypar Status Object:\n  source=%d\n  tag=%d\n  error=%d\n  length=%d\n  size=%d\n' %(self.source, self.tag, self.error, self.length, self.size)
+        stat = 'source=%d\n  tag=%d\n  error=%d\n  length=%d\n  size=%d\n'\
+               % (self.source, self.tag, self.error, self.length, self.size)
+        return ('Pypar Status Object:\n %s' % stat)
 
     def bytes(self):
         """Number of bytes transmitted (excl control info)
         """
         return self.length * self.size
-
 
 
 def create_control_info(x, vanilla=0, return_object=False):
@@ -598,11 +587,11 @@ def create_control_info(x, vanilla=0, return_object=False):
 
        There are three protocols:
        'array':   numpy arrays of type 'i', 'l', 'f', 'd', 'F' or 'D' can be
-                  communicated  with mpiext.send_array and mpiext.receive_array.
+                  communicated with mpiext.send_array and mpiext.receive_array.
        'string':  Text strings can be communicated with mpiext.send_string and
                   mpiext.receive_string.
-       'vanilla': All other types can be communicated as string representations
-                  provided that the objects
+       'vanilla': All other types can be communicated as string
+                  representations provided that the objects
                   can be serialised using pickle (or cPickle).
                   The latter mode is less efficient than the
                   first two but it can handle general structures.
@@ -615,11 +604,9 @@ def create_control_info(x, vanilla=0, return_object=False):
        of the admissible typecodes.
 
        The optional argument return_object asks to return object as well.
-       This is useful in case it gets modified as in the case of general structures
-       using the vanilla protocol.
+       This is useful in case it gets modified as in the case of general
+       structures using the vanilla protocol.
     """
-
-    import types
 
     # Default values
     protocol = 'vanilla'
@@ -633,12 +620,12 @@ def create_control_info(x, vanilla=0, return_object=False):
             protocol = 'string'
             typecode = 'c'
             size = len(x)
-        elif type(x).__name__ == 'ndarray': # numpy isn't imported yet
+        elif type(x).__name__ == 'ndarray':  # numpy isn't imported yet
             try:
                 import numpy
             except:
-                print "WARNING (pypar.py): numpy module could not be imported,",
-                print "reverting to vanilla mode"
+                print 'WARNING (pypar.py): numpy could not be imported.',
+                print 'Reverting to vanilla mode'
                 protocol = 'vanilla'
             else:
                 typecode = x.dtype.char
@@ -647,17 +634,18 @@ def create_control_info(x, vanilla=0, return_object=False):
                     shape = x.shape
                     size = product(shape)
                 else:
-                    print "WARNING (pypar.py): numpy object type %s is not supported."\
-                          %(x.dtype.char)
-                    print "Only types 'i', 'l', 'f', 'd', 'F', 'D' are supported,",
-                    print "Reverting to vanilla mode."
+                    print ('WARNING (pypar.py): numpy object type '
+                           '%s is not supported.' % x.dtype.char)
+                    print ('Only types \'i\', \'l\', \'f\', \'d\', \'F\' and '
+                           ' \'D\' are supported.'),
+                    print 'Reverting to vanilla mode.'
                     protocol = 'vanilla'
 
     # Pickle general structures using the vanilla protocol
     if protocol == 'vanilla':
         from cPickle import dumps
         x = dumps(x, protocol=2)
-        size = len(x) # Let count be length of pickled object
+        size = len(x)  # Let count be length of pickled object
 
     # Return
     if return_object:
@@ -666,9 +654,7 @@ def create_control_info(x, vanilla=0, return_object=False):
         return [protocol, typecode, size, shape]
 
 
-
 #----------------------------------------------
-
 def send_control_info(control_info, destination):
     """Send control info to destination
     """
@@ -677,10 +663,10 @@ def send_control_info(control_info, destination):
     # Convert to strings
     control_info = [str(c) for c in control_info]
 
-    control_msg = string.join(control_info,control_sep)
+    control_msg = string.join(control_info, control_sep)
     if len(control_msg) > control_data_max_size:
-        errmsg = 'Length of control_info exceeds specified maximium (%d)'\
-                 %control_data_max_size
+        errmsg = ('Length of control_info exceeds specified maximium (%d)'
+                  % control_data_max_size)
         errmsg += ' - Please increase it (in pypar.py)'
         raise errmsg
 
@@ -690,27 +676,27 @@ def send_control_info(control_info, destination):
 def receive_control_info(source, return_source=False):
     """Receive control info from source
 
-    The optional argument (due to Jim Bosch) also returns the actual source node
-    which can be used to require that the data message come from the same node.
+    The optional argument (due to Jim Bosch) also returns the actual source
+    node which can be used to require that the data message come from the
+    same node.
     """
 
     # FIXME (Ole): Perhaps we should include actual source in the control info?
-
     import string
 
-    msg = ' '*control_data_max_size
+    msg = ' ' * control_data_max_size
 
     stat = receive_string(msg, source, control_tag)
     # No need to create status object here - it is reserved
     # for payload communications only
 
-    msg = msg[:stat[3]] # Trim buffer to actual received length (needed?)
+    msg = msg[:stat[3]]  # Trim buffer to actual received length (needed?)
 
     control_info = msg.split(control_sep)
 
-    assert len(control_info) == 4, 'len(control_info) = %d' %len(control_info)
-    control_info[2] = eval(control_info[2]) # Convert back to int
-    control_info[3] = eval(control_info[3]) # Convert back to tuple
+    assert len(control_info) == 4, 'len(control_info) = %d' % len(control_info)
+    control_info[2] = eval(control_info[2])  # Convert back to int
+    control_info[3] = eval(control_info[3])  # Convert back to tuple
 
     if return_source:
         return control_info, int(stat[0])
@@ -722,10 +708,12 @@ def receive_control_info(source, return_source=False):
 # Initialise module
 #----------------------------------------------------------------------------
 
-
 # Take care of situation where module is part of package
-import sys, os, string, os.path
-dirname = os.path.dirname(string.replace(__name__,'.',os.sep)).strip()
+import sys
+import os
+import string
+import os.path
+dirname = os.path.dirname(string.replace(__name__, '.', os.sep)).strip()
 
 if not dirname:
     dirname = '.'
@@ -734,11 +722,9 @@ if dirname[-1] != os.sep:
     dirname += os.sep
 
 
-
 # Import MPI extension
 #
 # Verify existence of mpiext.so.
-
 try:
     import mpiext
 except:
@@ -751,18 +737,17 @@ except:
     error = 1
     print errmsg
 else:
-
-    # Determine if MPI program is allowed to run sequentially on current platform
+    # Determine if MPI program is allowed to run sequentially on current
+    # platform
     # Attempting to check this automatically may case some systems to hang.
-
     if sys.platform in ['linux2', 'sunos5', 'win32', 'darwin']:
         # Linux (LAM,MPICH) or Sun (MPICH)
-        error = 0  #Sequential execution of MPI is allowed
+        error = 0  # Sequential execution of MPI is allowed
     else:
         # Platform: Alpha 'osf1V5'
-        cmdstring = '"import mpiext, sys; mpiext.init(sys.argv); mpiext.finalize()"'
-        #s = 'cd %s; python -c %s' %(dirname, cmdstring)
-        s = 'python -c %s >/dev/null 2>/dev/null' %cmdstring
+        cmdstring = ('"import mpiext, sys; mpiext.init(sys.argv);'
+                     ' mpiext.finalize()"')
+        s = 'python -c %s >/dev/null 2>/dev/null' % cmdstring
         error = os.system(s)
 
         # The check is performed in a separate shell.
@@ -780,7 +765,8 @@ else:
         #Comparisons of two strategies using LAM
         #
         # Strategy 1: Assume seq execution is OK (i.e. set error = 0)
-        # Strategy 2: Try to test if mpi can be initialised (in a separate shell)
+        # Strategy 2: Try to test if mpi can be initialised (in a separate
+        # shell)
         #
         #
         # Strategy 1 (currently used)
@@ -799,8 +785,6 @@ else:
         # Parallel exec      |  Hangs      | OK
         #
 
-
-
 # Initialise MPI
 #
 # Attempt to initialise mpiext.so
@@ -808,12 +792,14 @@ else:
 # sequential execution.
 
 if error:
-    print "WARNING: MPI library could not be initialised - running sequentially"
+    print 'WARNING: MPI library could not be initialised. Running sequentially'
 
     # Define rudimentary functions to keep sequential programs happy
+    def size():
+        return 1
 
-    def size(): return 1
-    def rank(): return 0
+    def rank():
+        return 0
 
     def get_processor_name():
         import os
@@ -831,9 +817,11 @@ if error:
         import sys
         sys.exit()
 
-    def finalize(): pass
+    def finalize():
+        pass
 
-    def barrier(): pass
+    def barrier():
+        pass
 
     def time():
         import time
@@ -848,10 +836,10 @@ else:
          scatter_string, scatter_array,\
          gather_string, gather_array,\
          reduce_array,\
-	 bsend_string, bsend_array, \
-	 mpi_alloc_and_attach, mpi_detach_and_dealloc, \
-	 mpi_alloc, mpi_dealloc, mpi_attach, mpi_detach, \
-	 string_push_for_alloc_and_attach, array_push_for_alloc_and_attach, \
+         bsend_string, bsend_array, \
+         mpi_alloc_and_attach, mpi_detach_and_dealloc, \
+         mpi_alloc, mpi_dealloc, mpi_attach, mpi_detach, \
+         string_push_for_alloc_and_attach, array_push_for_alloc_and_attach, \
          MPI_ANY_TAG as any_tag, MPI_TAG_UB as max_tag,\
          MPI_ANY_SOURCE as any_source,\
          MAX, MIN, SUM, PROD, LAND, BAND,\
@@ -870,9 +858,3 @@ else:
     if rank() == 0:
         print 'Pypar (version %s) initialised MPI OK with %d processors'\
             % (__version__, size())
-
-
-
-
-
-
