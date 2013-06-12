@@ -34,7 +34,7 @@ class PyparTestResult(result.TestResult):
 def collect_results(output):
     test_results = {}
 
-    testre = re.compile('@(\d):(\w+(?:\.\w+){1,}):([A-Z]+)')
+    testre = re.compile('@(\d+):(\w+(?:\.\w+){1,}):([A-Z]+)')
 
     for line in output.splitlines():
         match = testre.search(line)
