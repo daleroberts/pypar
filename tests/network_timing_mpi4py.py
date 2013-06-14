@@ -3,6 +3,8 @@ from mpi4py import MPI
 
 consistency_check = False
 
+comm = MPI.COMM_WORLD
+
 def linfit(x, y):
   """
   Fit a and b to the model y = ax + b. Return a,b,variance.
@@ -52,8 +54,8 @@ repeats = 10
 msgid = 0
 vanilla = 0 #Select vanilla mode (slower but general)
 
-numprocs = MPI.COMM_WORLD.Get_size()
-myid = MPI.COMM_WORLD.Get_rank()
+numprocs = comm.Get_size()
+myid = comm.Get_rank()
 processor_name = MPI.Get_processor_name()
 
 if myid == 0:
@@ -66,7 +68,7 @@ if numprocs < 2:
   print "Program needs at least two processors - aborting\n"
   sys.exit(2)
    
-MPI.COMM_WORLD.barrier() #Synchronize all before timing   
+comm.barrier() #Synchronize all before timing   
 print "I am process %d on %s" %(myid,processor_name)
 
 
@@ -91,9 +93,6 @@ avgtime = [0.0]*MAXI
 mintime = [ 1000000.0]*MAXI      
 maxtime = [-1000000.0]*MAXI            
 
-
-
-
 if myid == 0:   
   # Determine timer overhead 
   cpuOH = 1.0;
@@ -104,7 +103,6 @@ if myid == 0:
     
   print "Timing overhead is %f seconds.\n" %cpuOH         
 
-     
 # Pass msg circularly   
 for k in range(repeats):
   if myid == 0:
@@ -115,7 +113,7 @@ for k in range(repeats):
    
     noelem[i] = m
    
-    MPI.COMM_WORLD.barrier() # Synchronize 
+    comm.barrier() # Synchronize 
    
     if myid == 0:
       #
@@ -123,8 +121,9 @@ for k in range(repeats):
       #
       t1 = MPI.Wtime()
 
-      MPI.COMM_WORLD.send(A[:m], 1, 0)
-      C = MPI.COMM_WORLD.recv(None, numprocs-1, 0)
+      comm.Send(A[:m], dest=1, tag=0)
+      C = numpy.empty_like(A[:m])
+      comm.Recv(C, source=numprocs-1, tag=0)
        
       t2 = MPI.Wtime() - t1 - cpuOH
       t2 = t2/numprocs
@@ -141,9 +140,9 @@ for k in range(repeats):
       #
       # Parallel process - get msg and pass it on
       #
-
-      C = MPI.COMM_WORLD.recv(None, myid-1, 0)
-      MPI.COMM_WORLD.send(A[:m], (myid+1)%numprocs, 0)
+      C = numpy.empty_like(A[:m])
+      comm.Recv(C, source=myid-1, tag=0)
+      comm.Send(A[:m], dest=(myid+1)%numprocs, tag=0)
 
 # Output stats
 #
