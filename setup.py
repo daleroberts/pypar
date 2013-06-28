@@ -17,7 +17,7 @@ class MPICCompiler(distutils.unixccompiler.UnixCCompiler):
 
     def set_executable(self, key, value):
         if key == 'linker_so' and type(value) == str:
-            value = os.environ["CC"] + ' '.join(value.split()[1:])
+            value = 'mpicc ' + ' '.join(value.split()[1:])
 
         return self.__set_executable(key, value)
 
