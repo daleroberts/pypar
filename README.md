@@ -31,6 +31,9 @@ Parallel Python, efficient and scalable parallelism using the message passing in
 - Pypar installs with distutils: `python setup.py install`
 - Pypar is mostly used on Linux systems, but has been tested on others too
 
+For Ubuntu (and other Debian derivatives) install dependencies as follows:
+sudo apt-get install openmpi-bin libopenmpi-dev python-dev
+
 
 ## Example
 
