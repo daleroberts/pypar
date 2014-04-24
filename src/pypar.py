@@ -845,7 +845,11 @@ else:
     # Work around bug in OpenMPI (December 2009):
     # https://bugs.launchpad.net/ubuntu/+source/petsc4py/+bug/232036
     from ctypes import *
-    CDLL('libmpi.so', RTLD_GLOBAL)
+    if sys.platform == 'darwin':
+      pass
+      # CDLL('libmpi.dylib', RTLD_GLOBAL)
+    else:
+      CDLL('libmpi.so', RTLD_GLOBAL)
     # End work around
 
     # Initialise MPI with cmd line (needed by MPICH/Linux)
