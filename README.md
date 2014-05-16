@@ -2,6 +2,8 @@
 
 Parallel Python, efficient and scalable parallelism using the message passing interface (MPI).
 
+[![Build Status](https://travis-ci.org/daleroberts/pypar.svg?branch=master)](https://travis-ci.org/daleroberts/pypar)
+
 ## Features
 
 - **Python interpreter is not modified**: Parallel python programs need only
