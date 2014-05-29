@@ -377,8 +377,10 @@ def reduce(x, op, root=0, buffer=None, vanilla=0, bypass=False):
 #---------------------------------
 # Functions related to MPI_Bsend()
 #---------------------------------
+
+
 def bsend(x, destination, use_buffer=False, vanilla=False,
-         tag=default_tag, bypass=False):
+          tag=default_tag, bypass=False):
 
     if bypass is True:
         bsend_array(x, destination, tag)
@@ -532,6 +534,7 @@ def Get_processor_name():
 # Pypar specific functionality
 #---------------------------------------------------------
 class Status:
+
     """ MPI Status block returned by receive if
         specified with parameter return_status=True
     """
@@ -734,7 +737,7 @@ else:
         # If lamboot is not loaded error will be nozero as it should.
         # I don't know how to deal with this
         #
-        #Comparisons of two strategies using LAM
+        # Comparisons of two strategies using LAM
         #
         # Strategy 1: Assume seq execution is OK (i.e. set error = 0)
         # Strategy 2: Try to test if mpi can be initialised (in a separate
@@ -801,36 +804,31 @@ if error:
 
 else:
     from mpiext import size, rank, barrier, time,\
-         get_processor_name,\
-         init, initialized, finalize, abort,\
-         send_string, receive_string,\
-         send_array, receive_array, broadcast_string, broadcast_array,\
-         scatter_string, scatter_array,\
-         gather_string, gather_array,\
-         reduce_array,\
-         bsend_string, bsend_array, \
-         mpi_alloc_and_attach, mpi_detach_and_dealloc, \
-         mpi_alloc, mpi_dealloc, mpi_attach, mpi_detach, \
-         string_push_for_alloc_and_attach, array_push_for_alloc_and_attach, \
-         MPI_ANY_TAG as any_tag, MPI_TAG_UB as max_tag,\
-         MPI_ANY_SOURCE as any_source,\
-         MAX, MIN, SUM, PROD, LAND, BAND,\
-         LOR, BOR, LXOR, BXOR
+        get_processor_name,\
+        init, initialized, finalize, abort,\
+        send_string, receive_string,\
+        send_array, receive_array, broadcast_string, broadcast_array,\
+        scatter_string, scatter_array,\
+        gather_string, gather_array,\
+        reduce_array,\
+        bsend_string, bsend_array, \
+        mpi_alloc_and_attach, mpi_detach_and_dealloc, \
+        mpi_alloc, mpi_dealloc, mpi_attach, mpi_detach, \
+        string_push_for_alloc_and_attach, array_push_for_alloc_and_attach, \
+        MPI_ANY_TAG as any_tag, MPI_TAG_UB as max_tag,\
+        MPI_ANY_SOURCE as any_source,\
+        MAX, MIN, SUM, PROD, LAND, BAND,\
+        LOR, BOR, LXOR, BXOR
 
     # Work around bug in OpenMPI (December 2009):
     # https://bugs.launchpad.net/ubuntu/+source/petsc4py/+bug/232036
     from ctypes import *
     if sys.platform == 'darwin':
-      pass
-      # CDLL('libmpi.dylib', RTLD_GLOBAL)
+        pass
+        # CDLL('libmpi.dylib', RTLD_GLOBAL)
     else:
-      CDLL('libmpi.so', RTLD_GLOBAL)
+        CDLL('libmpi.so', RTLD_GLOBAL)
     # End work around
 
     # Initialise MPI with cmd line (needed by MPICH/Linux)
     init(sys.argv)
-
-    # Report
-    if rank() == 0:
-        print 'Pypar (version %s) initialised MPI OK with %d processors'\
-            % (__version__, size())
