@@ -6,6 +6,9 @@ before_install:
   - sudo apt-get install -y libopenmpi-dev openmpi-bin
 install:
   - pip install tblib --use-mirrors
+  - pip install six --use-mirrors
   - pip install .
 # command to run tests
-script: "mpirun -c 4 python tests/test_pypar.py"
+script:
+  - "mpirun -c 4 python tests/test_pypar.py"
+  - "nosetests -w tests"
