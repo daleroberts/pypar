@@ -3,8 +3,9 @@ python:
   - "2.7"
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -y libopenmpi-dev openmpi-bin openmpi-doc
+  - sudo apt-get install -y libopenmpi-dev openmpi-bin
 install:
-  - "pip install ."
+  - pip install tblib --use-mirrors
+  - pip install .
 # command to run tests
 script: "mpirun -c 4 python tests/test_pypar.py"
