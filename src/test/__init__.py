@@ -1,5 +1,5 @@
 """
-MPI Tests
+Parallel Testing
 """
 import subprocess
 import unittest
@@ -10,11 +10,15 @@ import pypar as pp
 import sys
 import os
 
+from os.path import abspath
+
 from tblib import pickling_support
 pickling_support.install()
 
+MPI_CMD = 'mpirun'
 
-class NullWritelnFile(object):
+
+class NullFile(object):
 
     def write(self, *arg):
         pass
@@ -40,8 +44,8 @@ class WorkerResult(unittest.result.TestResult):
     def __init__(self, stream, descriptions, verbosity):
         super(WorkerResult, self).__init__()
         self.stream = stream
-        sys.stdout = NullWritelnFile()
-        sys.stderr = NullWritelnFile()
+        sys.stdout = NullFile()
+        sys.stderr = NullFile()
 
     def addSuccess(self, test):
         self._send_event('addSuccess', test)
@@ -86,7 +90,8 @@ class WorkerTestRunner(unittest.runner.TextTestRunner):
 
 class TestProxy(object):
 
-    def __init__(self, testname, test, ncpus=2):
+    def __init__(self, testfile, testname, test, ncpus=2):
+        self.testfile = testfile
         self.testname = testname
         self.test = test
         self.ncpus = ncpus
@@ -94,8 +99,8 @@ class TestProxy(object):
     def __call__(self, result=None):
         from six import reraise
 
-        argv = ['mpirun', '-c', str(self.ncpus), 'python',
-                os.path.abspath(sys.argv[0]), self.testname]
+        argv = [MPI_CMD, '-c', str(self.ncpus), 'python',
+                self.testfile, self.testname]
         popen = subprocess.Popen(argv,
                                  cwd=os.getcwd(),
                                  stdout=subprocess.PIPE,
@@ -124,39 +129,26 @@ class TestProxy(object):
             popen.wait()
 
 
-def mpirun(ncpus=2):
+def in_parallel(ncpus=2):
     def proxy(cls):
         def proxy_fn(name, fn):
             def new_fn(self):
                 testname = '%s.%s' % (cls.__name__, name)
-                proxy = TestProxy(testname, self, ncpus)
+                testfile = abspath(inspect.getsourcefile(fn))
+                proxy = TestProxy(testfile, testname, self, ncpus)
                 return proxy()
-
             return new_fn
-
         if not os.getenv('OMPI_COMM_WORLD_RANK'):
             for name, fn in inspect.getmembers(cls, predicate=inspect.ismethod):
                 if 'test' in name.lower():
-                    setattr(cls, name, proxy_fn(name, fn))
-
+                    thefunction = proxy_fn(name, fn)
+                    thefunction.__name__ = name
+                    setattr(cls, name, thefunction)
         return cls
     return proxy
 
 
-@mpirun(ncpus=3)
-class Test(unittest.TestCase):
-
-    def setUp(self):
-        self.x = 1
-
-    def test_one(self):
-        self.assertTrue(pp.size() == 3)
-
-    def test_two(self):
-        self.assertTrue(True)
-
-
-if __name__ == '__main__':
+def main():
     if os.getenv('OMPI_COMM_WORLD_RANK'):
         import atexit
         atexit.register(pp.finalize)
