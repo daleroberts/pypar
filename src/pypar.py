@@ -368,10 +368,6 @@ def reduce(x, op, root=0, buffer=None, vanilla=0, bypass=False):
 
     return buffer
 
-#---------------------------------
-# Functions related to MPI_Bsend()
-#---------------------------------
-
 
 def bsend(x, destination, use_buffer=False, vanilla=False,
           tag=default_tag, bypass=False):
@@ -445,9 +441,6 @@ def detach():
     mpi_detach()
 
 
-#---------------------------------------------------------
-# Auxiliary functions
-#---------------------------------------------------------
 def balance(N, P, p):
     """Compute p'th interval when N is distributed over P bins.
 
@@ -527,7 +520,7 @@ def Get_processor_name():
 #---------------------------------------------------------
 # Pypar specific functionality
 #---------------------------------------------------------
-class Status:
+class Status(object):
 
     """ MPI Status block returned by receive if
         specified with parameter return_status=True
@@ -676,11 +669,9 @@ def receive_control_info(source, return_source=False):
 #----------------------------------------------------------------------------
 # Initialise module
 #----------------------------------------------------------------------------
-
 # Take care of situation where module is part of package
 import sys
 import os
-import string
 import os.path
 dirname = os.path.dirname(string.replace(__name__, '.', os.sep)).strip()
 
