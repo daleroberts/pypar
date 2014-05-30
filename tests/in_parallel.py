@@ -2,7 +2,7 @@ import unittest
 import pypar as pp
 
 
-@pp.test_in_parallel(ncpus=3)
+@pp.test.in_parallel(ncpus=3)
 class TestOne(unittest.TestCase):
 
     def setUp(self):
@@ -15,7 +15,7 @@ class TestOne(unittest.TestCase):
         self.assertTrue(True)
 
 
-@pp.test_in_parallel(ncpus=4)
+@pp.test.in_parallel(ncpus=4)
 class TestTwo(unittest.TestCase):
 
     def setUp(self):

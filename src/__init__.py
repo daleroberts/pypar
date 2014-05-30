@@ -7,5 +7,3 @@ standard.
 
 from pypar import *
 import test
-
-test_in_parallel = test.in_parallel
