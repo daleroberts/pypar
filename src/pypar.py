@@ -21,7 +21,6 @@ See doc strings of individual functions for detailed documentation.
 """
 
 from numpy import zeros, reshape, product
-from __metadata__ import __version__, __date__, __author__
 import types
 import string
 
@@ -37,32 +36,27 @@ control_sep = ':'           # Separator for fields in control info (NOT ',')
 control_data_max_size = 64  # Maximal size of string holding control data
 
 
-#------------------------
-# Basic MPI communication
-#------------------------
 def send(x, destination, use_buffer=False, vanilla=False,
          tag=default_tag, bypass=False):
-    """Wrapper for easy MPI send.
-       Send x to destination.
+    """
+    Wrapper for easy MPI send.  Send x to destination.
 
-       Automatically determine appropriate protocol
-       and call corresponding send function.
-       Also passes type and size information on as preceding message to
-       simplify the receive call.
+    Automatically determine appropriate protocol and call
+    corresponding send function.  Also passes type and size
+    information on as preceding message to simplify the receive call.
 
-       The variable x can be any (picklable) type, but
-       numpy variables and text strings will most efficient.
-       Setting vanilla = 1 forces vanilla mode for any type.
+    The variable x can be any (picklable) type, but numpy variables
+    and text strings will most efficient.  Setting vanilla = 1 forces
+    vanilla mode for any type.
 
-       If use_buffer is True, workspace x will be used for the return value.
-       In this case the corresponding receive call must specify a buffer.
-       Otherwise a new workspace will be created by receive.
+    If use_buffer is True, workspace x will be used for the return
+    value.  In this case the corresponding receive call must specify
+    a buffer.  Otherwise a new workspace will be created by receive.
 
-       If bypass is True, all admin and error checks
-       get bypassed to reduce the latency. Should only
-       be used for sending numpy arrays and should be matched
-       with a bypass in the corresponding receive command.
-
+    If bypass is True, all admin and error checks get bypassed to
+    reduce the latency. Should only be used for sending numpy arrays
+    and should be matched with a bypass in the corresponding receive
+    command.
     """
 
     if bypass:
