@@ -6,4 +6,3 @@ standard.
 """
 
 from pypar import *
-import test
