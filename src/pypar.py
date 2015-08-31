@@ -484,12 +484,12 @@ def balance(N, P, p):
     list slicing such that the last element of Nlo:Nhi is, in fact, Nhi-1
     """
 
-    from math import floor
-
-    L = int(floor(float(N) / P))
-    K = N - P * L
+    N = int(N)
+    P = int(P)
+    p = int(p)
     if p >= P:
         return N, N
+    L, K = N // P, N % P
     if p < K:
         Nlo = p * L + p
         Nhi = Nlo + L + 1
