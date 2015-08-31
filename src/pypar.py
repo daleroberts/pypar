@@ -488,6 +488,8 @@ def balance(N, P, p):
 
     L = int(floor(float(N) / P))
     K = N - P * L
+    if p >= P:
+        return N, N
     if p < K:
         Nlo = p * L + p
         Nhi = Nlo + L + 1
