@@ -4,6 +4,12 @@
 
 [![Build Status](https://travis-ci.org/daleroberts/pypar.svg?branch=master)](https://travis-ci.org/daleroberts/pypar)
 
+**PyPar** is used by a number of large projects, such as:
+
+ - [ANUGA shallow water equation solver](https://github.com/GeoscienceAustralia/anuga_core)
+ - [TCRM A statistical-parametric model for assessing wind hazard from tropical cyclones](https://github.com/GeoscienceAustralia/tcrm)
+ - [Wind multipliers: for produce wind terrain, shielding and topographic multipliers](https://github.com/GeoscienceAustralia/Wind_multipliers)
+
 ## Example
 
 A simple 'pass the parcel' example.
