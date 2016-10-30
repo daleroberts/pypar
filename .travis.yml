@@ -5,8 +5,8 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y libopenmpi-dev openmpi-bin
 install:
-  - pip install tblib --use-mirrors
-  - pip install six --use-mirrors
+  - pip install tblib
+  - pip install six
   - pip install .
 # command to run tests
 script:
