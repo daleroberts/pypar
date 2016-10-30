@@ -53,9 +53,6 @@
 /*#define REPLACE 13 // Not available on all MPI systems */
 
 
-#define MPIEXT_ERRMSG_SIZE 132
-static char errmsg[MPIEXT_ERRMSG_SIZE];  /*Used to create exception messages*/
-
 /* MPI_Bsend() related variables. */
 static void *pt_buf;	/* Pointer to allocated buffer. */
 static int buf_size;	/* Size of buffer to allocate. */ 
@@ -83,9 +80,8 @@ static void rank_raise_mpi_runtime(const int error, const char * fcnname) {
      * this function. */
     int myrank;
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-    snprintf(errmsg, MPIEXT_ERRMSG_SIZE,
+    PyErr_Format(PyExc_RuntimeError,
 	    "rank %d: %s failed with return value %d", myrank, fcnname, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
 }
 
 
@@ -111,8 +107,6 @@ MPI_Datatype type_map(PyArrayObject *x, int *count) {
   
   int py_type;
   MPI_Datatype mpi_type;
-#define TM_ERR_MSG_SIZE 64
-  char type_map_err_msg[TM_ERR_MSG_SIZE];
 
   *count = length(x);
   
@@ -132,10 +126,10 @@ MPI_Datatype type_map(PyArrayObject *x, int *count) {
     mpi_type = MPI_FLOAT;
     (*count) *= 2;
   } else {
-    snprintf(type_map_err_msg, TM_ERR_MSG_SIZE,
-	    "Array must be of type int or float. I got py_type == %d", 
-	    py_type);
-    PyErr_SetString(PyExc_ValueError, type_map_err_msg);
+      /* FIXME:  Should let caller decide about setting Python exception */
+    PyErr_Format(PyExc_ValueError,
+	    "Array must be of type int or float. I got py_type == %d", py_type);
+    /* FIXME: consider MPI_DATATYPE_NULL */
     return (MPI_Datatype) NULL;
   }      
 
@@ -749,10 +743,9 @@ static PyObject *array_push_for_alloc_and_attach(PyObject *self,
 
   if (error != 0) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    snprintf(errmsg, MPIEXT_ERRMSG_SIZE,
+    PyErr_Format(PyExc_RuntimeError,
 	    "rank %d: array_push_for_alloc_and_attach: \
 	    MPI_Type_size failed with return value %d", myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
     return NULL;
   }  
 
@@ -795,10 +788,9 @@ static PyObject *mpi_alloc_and_attach(PyObject *self, PyObject *args) {
 
   if (error != 0) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    snprintf(errmsg, MPIEXT_ERRMSG_SIZE,
+    PyErr_Format(PyExc_RuntimeError,
 	    "rank %d: mpi_alloc_and_attach: MPI_Buffer_attach \
 	    failed with return value %d", myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
     return NULL;
   }  
 
@@ -930,9 +922,8 @@ static PyObject * rank(PyObject *self, PyObject *args) {
 
   error = MPI_Comm_rank(MPI_COMM_WORLD, &myid);
   if (error != 0) {
-    snprintf(errmsg, MPIEXT_ERRMSG_SIZE,
-	    "rank ?: MPI_Comm_rank failed with error code %d", error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    PyErr_Format(PyExc_RuntimeError,
+	    "rank ?: MPI_Comm_rank failed with return value %d", error);
     return NULL;
   }  
   
@@ -987,9 +978,8 @@ static PyObject * init(PyObject *self, PyObject *args) {
   error = MPI_Init(&argc, &argv); 
   if (error != 0) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    snprintf(errmsg, MPIEXT_ERRMSG_SIZE,
+    PyErr_Format(PyExc_RuntimeError,
 	    "rank ?: MPI_Init failed with return value %d", error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);   
     return NULL;
   }  
 
@@ -1019,9 +1009,8 @@ static PyObject * finalize(PyObject *self, PyObject *args) {
   
   error = MPI_Finalize();
   if (error != 0) {
-    snprintf(errmsg, MPIEXT_ERRMSG_SIZE,
-	    "rank %d: MPI_finalize failed with return value %d", myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    PyErr_Format(PyExc_RuntimeError,
+	    "rank %d: MPI_Finalize failed with return value %d", myid, error);
     return NULL;
   }  
     
