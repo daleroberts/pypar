@@ -53,8 +53,6 @@
 /*#define REPLACE 13 // Not available on all MPI systems */
 
 
-static char errmsg[132];  /*Used to cretae exception messages*/
-
 /* MPI_Bsend() related variables. */
 static void *pt_buf;	/* Pointer to allocated buffer. */
 static int buf_size;	/* Size of buffer to allocate. */ 
@@ -73,6 +71,18 @@ int length(PyArrayObject *x) {
     
   return length;
 }  
+
+
+static void rank_raise_mpi_runtime(const int error, const char * fcnname) {
+    /* Common procedure for setting the error string and raise RuntimeError
+     * exception.
+     * Caller is expected to return with a value indicating error after calling
+     * this function. */
+    int myrank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+    PyErr_Format(PyExc_RuntimeError,
+	    "rank %d: %s failed with return value %d", myrank, fcnname, error);
+}
 
 
 MPI_Datatype type_map(PyArrayObject *x, int *count) {  
@@ -97,7 +107,6 @@ MPI_Datatype type_map(PyArrayObject *x, int *count) {
   
   int py_type;
   MPI_Datatype mpi_type;
-  char err_msg[64];
 
   *count = length(x);
   
@@ -117,10 +126,10 @@ MPI_Datatype type_map(PyArrayObject *x, int *count) {
     mpi_type = MPI_FLOAT;
     (*count) *= 2;
   } else {
-    sprintf(err_msg, 
-	    "Array must be of type int or float. I got py_type == %d", 
-	    py_type);
-    PyErr_SetString(PyExc_ValueError, err_msg);
+      /* FIXME:  Should let caller decide about setting Python exception */
+    PyErr_Format(PyExc_ValueError,
+	    "Array must be of type int or float. I got py_type == %d", py_type);
+    /* FIXME: consider MPI_DATATYPE_NULL */
     return (MPI_Datatype) NULL;
   }      
 
@@ -176,7 +185,7 @@ MPI_Op op_map(int py_op) {
 /*********************************************************/
 static PyObject *send_string(PyObject *self, PyObject *args) {
   char *s;
-  int destination, tag, length, error, myid;
+  int destination, tag, length, error;
  
   /* process the parameters */
   if (!PyArg_ParseTuple(args, "s#ii", &s, &length, &destination, &tag))
@@ -186,10 +195,7 @@ static PyObject *send_string(PyObject *self, PyObject *args) {
   error = MPI_Send(s, length, MPI_CHAR, destination, tag, MPI_COMM_WORLD);
   
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Send failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    rank_raise_mpi_runtime(error, "MPI_Send");
     return NULL;
   }  
       
@@ -204,7 +210,7 @@ static PyObject *send_string(PyObject *self, PyObject *args) {
 /**********************************************************/
 static PyObject *receive_string(PyObject *self, PyObject *args) {
   char *s;
-  int source, tag, length, error, st_length, myid; 
+  int source, tag, length, error, st_length; 
   MPI_Status status;
 
   /* process the parameters */
@@ -215,10 +221,7 @@ static PyObject *receive_string(PyObject *self, PyObject *args) {
   error = MPI_Recv(s, length, MPI_CHAR, source, tag, MPI_COMM_WORLD, &status);
 
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Recv failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);   
+    rank_raise_mpi_runtime(error, "MPI_Recv");
     return NULL;
   }  
      
@@ -238,7 +241,7 @@ static PyObject *receive_string(PyObject *self, PyObject *args) {
 /**********************************************************/
 static PyObject *broadcast_string(PyObject *self, PyObject *args) {
   char *s;
-  int source, length, error, myid; 
+  int source, length, error; 
 
   /* process the parameters */
   if (!PyArg_ParseTuple(args, "s#i", &s, &length, &source))
@@ -247,10 +250,7 @@ static PyObject *broadcast_string(PyObject *self, PyObject *args) {
   /* call the MPI routine */
   error = MPI_Bcast(s, length, MPI_CHAR, source, MPI_COMM_WORLD);
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Bcast failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);   
+    rank_raise_mpi_runtime(error, "MPI_Bcast");
     return NULL;
   }  
    
@@ -266,7 +266,7 @@ static PyObject *broadcast_string(PyObject *self, PyObject *args) {
 static PyObject *scatter_string(PyObject *self, PyObject *args) {
   char *s;
   char *d;
-  int source, count, error, myid, numprocs; 
+  int source, count, error, numprocs; 
 
   /* process the parameters */
   if (!PyArg_ParseTuple(args, "s#si", &s, &count, &d, &source))
@@ -280,10 +280,7 @@ static PyObject *scatter_string(PyObject *self, PyObject *args) {
 		      source, MPI_COMM_WORLD);
 
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Scatter failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);   
+    rank_raise_mpi_runtime(error, "MPI_Scatter");
     return NULL;
   }  
    
@@ -299,7 +296,7 @@ static PyObject *scatter_string(PyObject *self, PyObject *args) {
 static PyObject *gather_string(PyObject *self, PyObject *args) {
   char *s;
   char *d;
-  int source, error, count, myid; 
+  int source, error, count; 
 
   /* process the parameters */
   if (!PyArg_ParseTuple(args, "s#si", &s, &count, &d, &source))
@@ -310,10 +307,7 @@ static PyObject *gather_string(PyObject *self, PyObject *args) {
 		     source, MPI_COMM_WORLD);
   
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Gather failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);   
+    rank_raise_mpi_runtime(error, "MPI_Gather");
     return NULL;
   }  
    
@@ -331,7 +325,7 @@ static PyObject *gather_string(PyObject *self, PyObject *args) {
 static PyObject *bsend_string(PyObject *self, PyObject *args) {
   char *s;
   int destination, tag, length;
-  int error, myid;
+  int error;
 
 
   /* Process the parameters. */
@@ -343,10 +337,7 @@ static PyObject *bsend_string(PyObject *self, PyObject *args) {
 
 
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Bsend failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    rank_raise_mpi_runtime(error, "MPI_Bsend");
     return NULL;
   }  
       
@@ -370,7 +361,7 @@ static PyObject *bsend_array(PyObject *self, PyObject *args) {
   int count;
   MPI_Datatype mpi_type;
 
-  int error, myid;
+  int error;
 
   /* Process the parameters. */
   if (!PyArg_ParseTuple(args, "Oii", &input, &destination, &tag))
@@ -392,10 +383,7 @@ static PyObject *bsend_array(PyObject *self, PyObject *args) {
   Py_DECREF(x); 	   
   
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Bsend failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);   
+    rank_raise_mpi_runtime(error, "MPI_Bsend");
     return NULL;
   }  
 
@@ -414,7 +402,7 @@ static PyObject *bsend_array(PyObject *self, PyObject *args) {
 static PyObject *send_array(PyObject *self, PyObject *args) {
   PyObject *input;
   PyArrayObject *x;
-  int destination, tag, error, count, myid;
+  int destination, tag, error, count;
   MPI_Datatype mpi_type;
   
   /* process the parameters */
@@ -435,10 +423,7 @@ static PyObject *send_array(PyObject *self, PyObject *args) {
   Py_DECREF(x); 	   
   
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Send failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);   
+    rank_raise_mpi_runtime(error, "MPI_Send");
     return NULL;
   }  
    
@@ -455,7 +440,7 @@ static PyObject *send_array(PyObject *self, PyObject *args) {
 /*************************************************************/
 static PyObject *receive_array(PyObject *self, PyObject *args) {
   PyArrayObject *x;
-  int source, tag, error, st_length, size, count, myid;
+  int source, tag, error, st_length, size, count;
   MPI_Datatype mpi_type;
   MPI_Status status;
 
@@ -474,10 +459,7 @@ static PyObject *receive_array(PyObject *self, PyObject *args) {
   /* Do not DECREF x as it must be returned to Python */
   	 
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Recv failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);   
+    rank_raise_mpi_runtime(error, "MPI_Recv");
     return NULL;
   }  
    
@@ -513,7 +495,7 @@ static PyObject *receive_array(PyObject *self, PyObject *args) {
 /*************************************************************/
 static PyObject *broadcast_array(PyObject *self, PyObject *args) {
   PyArrayObject *x;
-  int source, error, count, myid;
+  int source, error, count;
   MPI_Datatype mpi_type;
 
   /* process the parameters */
@@ -530,10 +512,7 @@ static PyObject *broadcast_array(PyObject *self, PyObject *args) {
 	 
 	 
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Bcast failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);   
+    rank_raise_mpi_runtime(error, "MPI_Bcast");
     return NULL;
   }  
 	 
@@ -549,7 +528,7 @@ static PyObject *broadcast_array(PyObject *self, PyObject *args) {
 static PyObject *scatter_array(PyObject *self, PyObject *args) {
   PyArrayObject *x;
   PyArrayObject *d;
-  int source, error, count, myid, numprocs;
+  int source, error, count, numprocs;
   MPI_Datatype mpi_type;
 
   /* process the parameters */
@@ -568,10 +547,7 @@ static PyObject *scatter_array(PyObject *self, PyObject *args) {
 		      mpi_type, source,	MPI_COMM_WORLD);
 	 
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Scatter failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    rank_raise_mpi_runtime(error, "MPI_Scatter");
     return NULL;
   }  
       
@@ -588,7 +564,7 @@ static PyObject *scatter_array(PyObject *self, PyObject *args) {
 static PyObject *gather_array(PyObject *self, PyObject *args) {
   PyArrayObject *x;
   PyArrayObject *d;
-  int source, error, count, myid;
+  int source, error, count;
   MPI_Datatype mpi_type;
 
   /* process the parameters */
@@ -604,10 +580,7 @@ static PyObject *gather_array(PyObject *self, PyObject *args) {
 		      mpi_type, source,	MPI_COMM_WORLD);
 
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Gather failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    rank_raise_mpi_runtime(error, "MPI_Gather");
     return NULL;
   }  
   
@@ -625,7 +598,7 @@ static PyObject *gather_array(PyObject *self, PyObject *args) {
 static PyObject *reduce_array(PyObject *self, PyObject *args) {
   PyArrayObject *x;
   PyArrayObject *d;
-  int source, op, error, count, count1, myid;
+  int source, op, error, count, count1;
   MPI_Datatype mpi_type, buffer_type;
   MPI_Op mpi_op;
 
@@ -648,9 +621,8 @@ static PyObject *reduce_array(PyObject *self, PyObject *args) {
      unless mpiext is being used independently */
   buffer_type = type_map(d, &count1);
   if (mpi_type != buffer_type) {
-    sprintf(errmsg, "mpiext.c (reduce_array): Input array and buffer must be of the same type.");
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
-		    
+    PyErr_SetString(PyExc_RuntimeError,
+	    "mpiext.c (reduce_array): Input array and buffer must be of the same type.");
     return NULL;  
   }
 
@@ -680,10 +652,7 @@ static PyObject *reduce_array(PyObject *self, PyObject *args) {
   }
          
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Reduce failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    rank_raise_mpi_runtime(error, "MPI_Reduce");
     return NULL;
   }  
   
@@ -774,9 +743,9 @@ static PyObject *array_push_for_alloc_and_attach(PyObject *self,
 
   if (error != 0) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: array_push_for_alloc_and_attach: \
-	        MPI_Type_size failed with error code %d\n", myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    PyErr_Format(PyExc_RuntimeError,
+	    "rank %d: array_push_for_alloc_and_attach: \
+	    MPI_Type_size failed with return value %d", myid, error);
     return NULL;
   }  
 
@@ -819,9 +788,9 @@ static PyObject *mpi_alloc_and_attach(PyObject *self, PyObject *args) {
 
   if (error != 0) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: mpi_alloc_and_attach: MPI_Buffer_attach: \
-	                 failed with error code %d\n", myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    PyErr_Format(PyExc_RuntimeError,
+	    "rank %d: mpi_alloc_and_attach: MPI_Buffer_attach \
+	    failed with return value %d", myid, error);
     return NULL;
   }  
 
@@ -860,15 +829,12 @@ static PyObject *mpi_detach_and_dealloc(PyObject *self, PyObject *args) {
  *
  */
 static PyObject *mpi_attach(PyObject *self, PyObject *args) {
-  int error, myid;
+  int error;
 
   error = MPI_Buffer_attach(pt_buf, buf_size);
 
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Buffer_attach: failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg); 
+    rank_raise_mpi_runtime(error, "MPI_Buffer_attach");
     return NULL;
   }  
 
@@ -956,9 +922,8 @@ static PyObject * rank(PyObject *self, PyObject *args) {
 
   error = MPI_Comm_rank(MPI_COMM_WORLD, &myid);
   if (error != 0) {
-    sprintf(errmsg, "Proc ?: MPI_Comm_rank failed with error code %d\n", 
-	    error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    PyErr_Format(PyExc_RuntimeError,
+	    "rank ?: MPI_Comm_rank failed with return value %d", error);
     return NULL;
   }  
   
@@ -966,14 +931,11 @@ static PyObject * rank(PyObject *self, PyObject *args) {
 }
 
 static PyObject * size(PyObject *self, PyObject *args) {
-  int error, numprocs, myid; 
+  int error, numprocs; 
   
   error = MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Comm_size failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    rank_raise_mpi_runtime(error, "MPI_Comm_size");
     return NULL;
   }  
   
@@ -982,14 +944,11 @@ static PyObject * size(PyObject *self, PyObject *args) {
   
 static PyObject * get_processor_name(PyObject *self, PyObject *args) {  
   char processor_name[MPI_MAX_PROCESSOR_NAME];
-  int  error, namelen, myid;
+  int  error, namelen;
 
   error = MPI_Get_processor_name(processor_name,&namelen);
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: Get_processor_name failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    rank_raise_mpi_runtime(error, "MPI_Get_processor_name");
     return NULL;
   }  
   
@@ -1019,9 +978,8 @@ static PyObject * init(PyObject *self, PyObject *args) {
   error = MPI_Init(&argc, &argv); 
   if (error != 0) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc ?: MPI_Init failed with error code %d\n", 
-	    error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);   
+    PyErr_Format(PyExc_RuntimeError,
+	    "rank ?: MPI_Init failed with return value %d", error);
     return NULL;
   }  
 
@@ -1031,15 +989,12 @@ static PyObject * init(PyObject *self, PyObject *args) {
 
 
 static PyObject * initialized(PyObject *self, PyObject *args) {  
-  int error, flag, myid;
+  int error, flag;
   
   error = MPI_Initialized(&flag);
   
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Initialized failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    rank_raise_mpi_runtime(error, "MPI_Initialized");
     return NULL;
   }  
 
@@ -1054,9 +1009,8 @@ static PyObject * finalize(PyObject *self, PyObject *args) {
   
   error = MPI_Finalize();
   if (error != 0) {
-    sprintf(errmsg, "Proc %d: MPI_Finalize failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    PyErr_Format(PyExc_RuntimeError,
+	    "rank %d: MPI_Finalize failed with return value %d", myid, error);
     return NULL;
   }  
     
@@ -1065,14 +1019,11 @@ static PyObject * finalize(PyObject *self, PyObject *args) {
 } 
 
 static PyObject * mpi_abort(PyObject *self, PyObject *args) {  
-  int error, code=0, myid;
+  int error, code=0;
   
   error = MPI_Abort(MPI_COMM_WORLD, code);
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Abort failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    rank_raise_mpi_runtime(error, "MPI_Abort");
     return NULL;
   }  
   
@@ -1081,14 +1032,11 @@ static PyObject * mpi_abort(PyObject *self, PyObject *args) {
 } 
 
 static PyObject * barrier(PyObject *self, PyObject *args) {  
-  int error, myid;
+  int error;
   
   error = MPI_Barrier(MPI_COMM_WORLD);
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
-    sprintf(errmsg, "Proc %d: MPI_Barrier failed with error code %d\n", 
-	    myid, error);
-    PyErr_SetString(PyExc_RuntimeError, errmsg);
+    rank_raise_mpi_runtime(error, "MPI_Barrier");
     return NULL;
   }  
   
