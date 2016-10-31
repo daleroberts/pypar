@@ -958,7 +958,7 @@ static PyObject * get_processor_name(PyObject *self, PyObject *args) {
 static PyObject * init(PyObject *self, PyObject *args) {  
   PyObject *input;
 
-  int i, error, myid;
+  int i, error;
   int argc = 0;  
   char **argv;   
 
@@ -977,7 +977,6 @@ static PyObject * init(PyObject *self, PyObject *args) {
   
   error = MPI_Init(&argc, &argv); 
   if (error != 0) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);    
     PyErr_Format(PyExc_RuntimeError,
 	    "rank ?: MPI_Init failed with return value %d", error);
     return NULL;
